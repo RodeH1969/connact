@@ -10,6 +10,9 @@
             padding: 10px;
             background-color: #f5f5f5;
             margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .logo-container {
@@ -28,14 +31,12 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 5px;
             border: 4px solid #000;
             box-sizing: border-box;
             border-radius: 8px;
             background-color: #fff;
-            cursor: grab;
-            transition: transform 0.2s, box-shadow 0.2s;
             position: relative;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
 
         .tile:hover {
@@ -43,14 +44,11 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
-        .tile:active {
-            cursor: grabbing;
+        .tile.dragging {
+            opacity: 0.5;
         }
 
         .drop-zone {
-            background-color: #fff;
-            font-size: 10px;
-            color: #999;
             cursor: default;
             transition: background-color 0.3s, border-color 0.3s;
             text-align: center;
@@ -62,7 +60,7 @@
             border-style: dashed;
         }
 
-        .tile img {
+        .tile img, .drop-zone img {
             width: 92px;
             height: 92px;
             object-fit: cover;
@@ -92,39 +90,69 @@
             color: #333;
         }
 
-        .game-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 100px);
-            grid-template-rows: repeat(4, 100px);
-            gap: 5px;
-            max-width: 420px;
-            margin: 0 auto;
-            justify-content: center;
+        .game-container {
+            display: flex;
+            flex-direction: column;
             align-items: center;
         }
 
-        /* Mobile Grid */
-        @media screen and (max-width: 600px) {
-            .game-grid {
-                grid-template-columns: repeat(4, calc((100vw - 20px) / 4));
-                grid-template-rows: repeat(4, calc((100vw - 20px) / 4));
-                gap: 2px;
-                padding: 5px;
-            }
+        .sequence-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 5px;
+            max-width: 420px;
+            margin-bottom: 10px;
+        }
 
-            .tile, .drop-zone {
-                width: calc((100vw - 20px) / 4);
-                height: calc((100vw - 20px) / 4);
-                min-width: 35px;
-                min-height: 35px;
-                margin: 1px;
-                border-width: 2px;
-            }
+        .png-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 50px);
+            grid-template-rows: repeat(5, 50px);
+            gap: 5px;
+            max-width: 165px;
+            margin-top: 10px;
+        }
 
-            .tile img {
-                width: calc(100% - 8px);
-                height: calc(100% - 8px);
-            }
+        .png-tile {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #ccc;
+            box-sizing: border-box;
+            border-radius: 4px;
+            background-color: #fff;
+            cursor: grab;
+            transition: transform 0.2s;
+        }
+
+        .png-tile:hover {
+            transform: scale(1.05);
+        }
+
+        .png-tile img {
+            width: 46px;
+            height: 46px;
+            object-fit: cover;
+            border-radius: 2px;
+        }
+
+        .enter-button {
+            display: none;
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .enter-button:hover {
+            background: #0056b3;
         }
 
         .game-info {
@@ -164,27 +192,6 @@
             font-size: 16px;
             cursor: pointer;
             margin-top: 10px;
-        }
-
-        .reveal-button {
-            background: #007bff;
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 8px;
-            font-size: 18px;
-            cursor: pointer;
-            margin: 20px;
-            font-weight: bold;
-        }
-
-        .reveal-button:hover {
-            background: #0056b3;
-        }
-
-        .reveal-button:disabled {
-            background: #6c757d;
-            cursor: not-allowed;
         }
 
         .sms-button:hover {
@@ -430,6 +437,45 @@
         .admin-access-btn:hover {
             background: #0056b3;
         }
+
+        /* Mobile Adjustments */
+        @media screen and (max-width: 360px) {
+            .tile, .drop-zone {
+                width: 50px;
+                height: 50px;
+            }
+
+            .tile img, .drop-zone img {
+                width: 46px;
+                height: 46px;
+            }
+
+            .sequence-grid {
+                max-width: 210px;
+            }
+
+            .png-grid {
+                grid-template-columns: repeat(3, 25px);
+                grid-template-rows: repeat(5, 25px);
+                gap: 2px;
+                max-width: 77px;
+            }
+
+            .png-tile {
+                width: 25px;
+                height: 25px;
+            }
+
+            .png-tile img {
+                width: 23px;
+                height: 23px;
+            }
+
+            .enter-button {
+                padding: 5px 10px;
+                font-size: 12px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -439,17 +485,14 @@
 
     <div class="game-info">
         <div id="attemptCounter">Attempt 1 of 7</div>
-        <button id="revealButton" class="reveal-button" onclick="revealAnswers()" disabled>
-            Place actors & movies to connect the sequence
-        </button>
         <div id="gameMessage" class="message" style="display: none;"></div>
         <div id="winMessage" class="win-message" style="display: none;"></div>
     </div>
 
-    <div class="tiles-section">
-        <div class="game-grid" id="gameGrid">
-            <!-- Grid will be populated by JavaScript with 1 Jason Bateman and 15 draggable sequence tiles -->
-        </div>
+    <div class="game-container">
+        <div class="sequence-grid" id="sequenceGrid"></div>
+        <button id="enterButton" class="enter-button" onclick="submitMove()" style="display: none;">Enter</button>
+        <div class="png-grid" id="pngGrid"></div>
     </div>
 
     <button class="admin-access-btn" onclick="openAdmin()" title="Admin Panel">⚙️</button>
@@ -545,31 +588,34 @@
         var revealInProgress = false;
         var correctAnswers = {};
         var placedImages = new Map();
+        var sequencePositions = [1, 2, 3, 4, 8, 7, 6, 5, 9, 10, 11, 12, 16, 15, 14, 13]; // Zigzag order
+        var currentPosition = 1;
+        var draggedTile = null;
 
         // Initialize game
         function initializeGame() {
             generateCorrectAnswers();
-            createGameGrid();
+            createInitialSequence();
+            createPngGrid();
             attachEventListeners();
-            checkIfAllTilesFilled();
         }
 
         function generateCorrectAnswers() {
             correctAnswers = {};
             for (var i = 0; i < gameConfig.sequence.length; i++) {
-                var item = gameConfig.sequence[i];
-                correctAnswers['dropTile' + (i + 2)] = item.file;
+                var pos = sequencePositions[i + 1]; // Start from position 2
+                correctAnswers['dropTile' + pos] = gameConfig.sequence[i].file;
             }
         }
 
-        function createGameGrid() {
-            var gameGrid = document.getElementById('gameGrid');
-            gameGrid.innerHTML = '';
+        function createInitialSequence() {
+            var sequenceGrid = document.getElementById('sequenceGrid');
+            sequenceGrid.innerHTML = '';
 
-            // Place Jason Bateman at position 1
+            // Fixed Jason Bateman at position 1
             var anchorTile = document.createElement('div');
             anchorTile.className = 'tile';
-            anchorTile.draggable = false; // Anchor not draggable
+            anchorTile.style.position = 'relative';
             anchorTile.setAttribute('data-src', gameConfig.anchor.file);
             anchorTile.setAttribute('data-name', gameConfig.anchor.name);
 
@@ -581,56 +627,65 @@
             };
 
             anchorTile.appendChild(img);
-            gameGrid.appendChild(anchorTile);
+            sequenceGrid.appendChild(anchorTile);
 
-            // Populate remaining 15 tiles with sequence items as draggable tiles
+            // Initial movie drop zone at position 2
+            var dropZone = document.createElement('div');
+            dropZone.className = 'drop-zone';
+            dropZone.id = 'dropTile2';
+            dropZone.innerHTML = '<span style="color: #007bff; font-weight: bold; font-size: 12px;">Movie</span>';
+            sequenceGrid.appendChild(dropZone);
+
+            // Center the initial two tiles
+            sequenceGrid.style.justifyContent = 'center';
+        }
+
+        function createPngGrid() {
+            var pngGrid = document.getElementById('pngGrid');
+            pngGrid.innerHTML = '';
+
             var allImages = gameConfig.sequence.slice();
-            for (var i = 0; i < 15; i++) {
-                if (i < allImages.length) {
-                    var item = allImages[i];
-                    var tile = document.createElement('div');
-                    tile.className = 'tile';
-                    tile.draggable = true;
-                    tile.setAttribute('data-src', item.file);
-                    tile.setAttribute('data-name', item.name);
+            for (var i = 0; i < allImages.length; i++) {
+                var item = allImages[i];
+                var tile = document.createElement('div');
+                tile.className = 'png-tile';
+                tile.draggable = true;
+                tile.setAttribute('data-src', item.file);
+                tile.setAttribute('data-name', item.name);
 
-                    var img = document.createElement('img');
-                    img.src = item.file;
-                    img.alt = item.name;
-                    img.onerror = function() {
-                        this.parentNode.innerHTML = '<div style="padding:10px; text-align:center; color:#999; font-size:10px;">' + this.alt + '<br><small>(Image not found)</small></div>';
-                    };
+                var img = document.createElement('img');
+                img.src = item.file;
+                img.alt = item.name;
+                img.onerror = function() {
+                    this.parentNode.innerHTML = '<div style="padding:5px; text-align:center; color:#999; font-size:8px;">' + this.alt + '</div>';
+                };
 
-                    tile.appendChild(img);
-                    gameGrid.appendChild(tile);
-                } else {
-                    var dropZone = document.createElement('div');
-                    dropZone.className = 'drop-zone';
-                    dropZone.id = 'dropTile' + (i + 2);
-
-                    var isMovieTile = (i + 1) % 2 === 0;
-                    var color = isMovieTile ? '#007bff' : '#28a745';
-                    var label = isMovieTile ? 'Movie' : 'Actor';
-
-                    dropZone.innerHTML = '<span style="color: ' + color + '; font-weight: bold; font-size: 12px;">' + label + '</span>';
-                    gameGrid.appendChild(dropZone);
-                }
+                tile.appendChild(img);
+                pngGrid.appendChild(tile);
             }
         }
 
         function attachEventListeners() {
             var dropZones = document.querySelectorAll('.drop-zone');
-            var imageElements = document.querySelectorAll('.tile[draggable="true"]');
+            var imageElements = document.querySelectorAll('.png-tile');
 
             for (var i = 0; i < imageElements.length; i++) {
                 imageElements[i].addEventListener('dragstart', function(e) {
                     if (gameWon || revealInProgress) return;
                     
+                    draggedTile = this;
                     var imgSrc = this.getAttribute('data-src');
                     var imgName = this.getAttribute('data-name');
                     e.dataTransfer.setData('text/plain', imgSrc);
                     e.dataTransfer.setData('text/name', imgName);
                     e.dataTransfer.effectAllowed = 'move';
+                    document.getElementById('enterButton').style.display = 'block';
+                });
+
+                imageElements[i].addEventListener('dragend', function(e) {
+                    if (!document.querySelector('.drop-zone.drag-over')) {
+                        document.getElementById('enterButton').style.display = 'none';
+                    }
                 });
             }
 
@@ -645,6 +700,7 @@
                 dropZones[i].addEventListener('dragleave', function(e) {
                     if (!this.contains(e.relatedTarget)) {
                         this.classList.remove('drag-over');
+                        document.getElementById('enterButton').style.display = 'none';
                     }
                 });
                 
@@ -656,12 +712,37 @@
                     
                     var imageSrc = e.dataTransfer.getData('text/plain');
                     var imageName = e.dataTransfer.getData('text/name');
-                    
                     if (imageSrc && !this.querySelector('img')) {
-                        placeImageInTile(this, imageSrc, imageName);
-                        checkIfAllTilesFilled();
+                        draggedTile.style.opacity = '0.5'; // Visual feedback
+                        document.getElementById('enterButton').style.display = 'block';
                     }
                 });
+            }
+        }
+
+        function submitMove() {
+            if (!draggedTile || !document.querySelector('.drop-zone.drag-over')) return;
+
+            var dropZone = document.querySelector('.drop-zone.drag-over');
+            var imageSrc = draggedTile.getAttribute('data-src');
+            var imageName = draggedTile.getAttribute('data-name');
+            var correctImage = correctAnswers[dropZone.id];
+
+            if (imageSrc === correctImage) {
+                placeImageInTile(dropZone, imageSrc, imageName);
+                draggedTile.parentNode.removeChild(draggedTile);
+                addNextTile();
+                checkIfAllTilesFilled();
+            } else {
+                dropZone.classList.remove('drag-over');
+                draggedTile.style.opacity = '1';
+                document.getElementById('gameMessage').innerHTML = 'It was wrong, you\'ve ' + (maxAttempts - currentAttempt) + ' more attempts to go, good luck!';
+                document.getElementById('gameMessage').style.display = 'block';
+                document.getElementById('enterButton').style.display = 'none';
+                if (currentAttempt < maxAttempts) {
+                    currentAttempt++;
+                    document.getElementById('attemptCounter').textContent = 'Attempt ' + currentAttempt + ' of ' + maxAttempts;
+                }
             }
         }
 
@@ -700,7 +781,7 @@
             
             var placedImage = placedImages.get(tile.id);
             if (placedImage) {
-                // No re-enable needed since all tiles are in grid
+                // No re-enable needed
             }
             
             var isMovieTile = tileNum % 2 === 0;
@@ -712,13 +793,34 @@
             checkIfAllTilesFilled();
         }
 
+        function addNextTile() {
+            currentPosition++;
+            if (currentPosition > 16) return;
+
+            var sequenceGrid = document.getElementById('sequenceGrid');
+            var newDropZone = document.createElement('div');
+            newDropZone.className = 'drop-zone';
+            newDropZone.id = 'dropTile' + sequencePositions[currentPosition - 1];
+
+            var isMovieTile = (currentPosition - 1) % 2 === 0;
+            var color = isMovieTile ? '#007bff' : '#28a745';
+            var label = isMovieTile ? 'Movie' : 'Actor';
+
+            newDropZone.innerHTML = '<span style="color: ' + color + '; font-weight: bold; font-size: 12px;">' + label + '</span>';
+            sequenceGrid.appendChild(newDropZone);
+
+            // Adjust layout to move left as tiles are added
+            var tiles = sequenceGrid.children;
+            var totalWidth = (tiles.length - 1) * 105; // 100px tile + 5px margin
+            sequenceGrid.style.transform = 'translateX(' + (210 - totalWidth / 2) + 'px)'; // Center initially, shift left
+        }
+
         function checkIfAllTilesFilled() {
             var totalTiles = Object.keys(correctAnswers).length;
             var filledTiles = placedImages.size;
             var revealButton = document.getElementById('revealButton');
             
             revealButton.disabled = filledTiles < totalTiles;
-            
             if (filledTiles === totalTiles) {
                 revealButton.textContent = "Reveal Answers";
             } else {
@@ -801,16 +903,12 @@
             document.getElementById('attemptCounter').textContent = 'Attempt ' + currentAttempt + ' of ' + maxAttempts;
             revealInProgress = false;
             checkIfAllTilesFilled();
-            createGameGrid(); // Reset grid for next attempt
         }
         
         function showAttemptMessage(correct, total) {
             var gameMessage = document.getElementById('gameMessage');
-            gameMessage.innerHTML = '<strong>Attempt ' + currentAttempt + ':</strong> ' + correct + '/' + total + ' correct. ' + (correct > 0 ? 'Keep going!' : 'Try again!');
+            gameMessage.innerHTML = 'It was wrong, you\'ve ' + (maxAttempts - currentAttempt) + ' more attempts to go, good luck!';
             gameMessage.style.display = 'block';
-            gameMessage.style.background = '#fff3cd';
-            gameMessage.style.borderColor = '#ffeaa7';
-            gameMessage.style.color = '#856404';
         }
         
         function showGameOverMessage() {

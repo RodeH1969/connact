@@ -4,50 +4,1259 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Connact Game</title>
-    <link rel="stylesheet" href="css/styles.css">
-    <script src="js/script.js" defer></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 10px;
+            background-color: #f5f5f5;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .logo-container {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .logo-container img {
+            max-width: 200px;
+            height: auto;
+        }
+
+        .tile, .drop-zone {
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 4px solid #000;
+            box-sizing: border-box;
+            border-radius: 8px;
+            background-color: #fff;
+            position: relative;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .tile:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .tile.dragging {
+            opacity: 0.5;
+        }
+
+        .drop-zone {
+            cursor: default;
+            transition: background-color 0.3s, border-color 0.3s;
+            text-align: center;
+        }
+
+        .drop-zone.drag-over {
+            background-color: #e8f5e8;
+            border-color: #4CAF50;
+            border-style: dashed;
+        }
+
+        .tile img, .drop-zone img {
+            width: 92px;
+            height: 92px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+
+        .clear-button {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid #ccc;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8px;
+            font-weight: bold;
+            color: #666;
+        }
+
+        .clear-button:hover {
+            background: rgba(255, 255, 255, 1);
+            color: #333;
+        }
+
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .sequence-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 5px;
+            max-width: 420px;
+            margin-bottom: 10px;
+        }
+
+        .png-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 50px);
+            grid-template-rows: repeat(5, 50px);
+            gap: 5px;
+            max-width: 165px;
+            margin-top: 10px;
+        }
+
+        .png-tile {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #ccc;
+            box-sizing: border-box;
+            border-radius: 4px;
+            background-color: #fff;
+            cursor: grab;
+            transition: transform 0.2s;
+        }
+
+        .png-tile:hover {
+            transform: scale(1.05);
+        }
+
+        .png-tile img {
+            width: 46px;
+            height: 46px;
+            object-fit: cover;
+            border-radius: 2px;
+        }
+
+        .enter-button {
+            display: none;
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .enter-button:hover {
+            background: #0056b3;
+        }
+
+        .game-info {
+            text-align: center;
+            margin: 10px 0;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .message {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px auto;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        .win-message {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px auto;
+            max-width: 800px;
+            text-align: center;
+        }
+
+        .sms-button {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .sms-button:hover {
+            background: #218838;
+        }
+
+        .admin-panel {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .admin-content {
+            background: white;
+            margin: 20px auto;
+            padding: 30px;
+            max-width: 1000px;
+            border-radius: 10px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .admin-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #007bff;
+        }
+
+        .admin-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+
+        .admin-section h3 {
+            margin-top: 0;
+            color: #007bff;
+            font-size: 18px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+        }
+
+        .admin-input {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .file-upload-zone {
+            border: 3px dashed #007bff;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+            margin: 15px 0;
+        }
+
+        .file-upload-zone:hover {
+            background: #f0f8ff;
+            border-color: #0056b3;
+        }
+
+        .file-upload-zone.dragover {
+            background: #e3f2fd;
+            border-color: #1976d2;
+        }
+
+        .uploaded-files {
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: white;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .file-item:last-child {
+            border-bottom: none;
+        }
+
+        .file-preview {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 5px;
+            margin-right: 15px;
+            border: 1px solid #ddd;
+        }
+
+        .file-info {
+            flex: 1;
+        }
+
+        .file-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .file-type {
+            color: #666;
+            font-size: 12px;
+        }
+
+        .remove-file {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .sequence-builder {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+
+        .sequence-step {
+            display: flex;
+            align-items: center;
+            margin: 12px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+
+        .step-number {
+            background: #007bff;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 20px;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .step-content {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 2fr 3fr;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .step-content select, .step-content input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .admin-buttons {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px solid #ddd;
+        }
+
+        .admin-buttons button {
+            margin: 0 15px;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        .save-btn {
+            background: #28a745;
+            color: white;
+        }
+
+        .save-btn:hover {
+            background: #218838;
+        }
+
+        .close-btn {
+            background: #6c757d;
+            color: white;
+        }
+
+        .close-btn:hover {
+            background: #5a6268;
+        }
+
+        .export-btn {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .export-btn:hover {
+            background: #138496;
+        }
+
+        .admin-access-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            width: 60px;
+            height: 60px;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .admin-access-btn:hover {
+            background: #0056b3;
+        }
+
+        /* Mobile Adjustments */
+        @media screen and (max-width: 360px) {
+            .tile, .drop-zone {
+                width: 50px;
+                height: 50px;
+            }
+
+            .tile img, .drop-zone img {
+                width: 46px;
+                height: 46px;
+            }
+
+            .sequence-grid {
+                max-width: 210px;
+            }
+
+            .png-grid {
+                grid-template-columns: repeat(3, 25px);
+                grid-template-rows: repeat(5, 25px);
+                gap: 2px;
+                max-width: 77px;
+            }
+
+            .png-tile {
+                width: 25px;
+                height: 25px;
+            }
+
+            .png-tile img {
+                width: 23px;
+                height: 23px;
+            }
+
+            .enter-button {
+                padding: 5px 10px;
+                font-size: 12px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Attempt 1 of 7</h1>
-            <p>Place actors & movies to connect the sequence</p>
-        </header>
-
-        <!-- Game Grid: 17 tiles (9 actors, 8 movies) -->
-        <div class="game-grid">
-            <div class="tile"><img src="actors/Melissa_McCarthy.png" alt="Melissa McCarthy" loading="lazy"></div>
-            <div class="tile"><img src="movies/bridesmaids.png" alt="Bridesmaids" loading="lazy"></div>
-            <div class="tile"><img src="actors/rebel_wilson.png" alt="Rebel Wilson" loading="lazy"></div>
-            <div class="tile"><img src="movies/pitchperfect.png" alt="Pitch Perfect" loading="lazy"></div>
-            <div class="tile"><img src="actors/anna_kendrick.png" alt="Anna Kendrick" loading="lazy"></div>
-            <div class="tile"><img src="movies/upintheair.png" alt="Up in the Air" loading="lazy"></div>
-            <div class="tile"><img src="actors/vera_farmiga.png" alt="Vera Farmiga" loading="lazy"></div>
-            <div class="tile"><img src="movies/couplesretreat.png" alt="Couples Retreat" loading="lazy"></div>
-            <div class="tile"><img src="actors/kristen_bell.png" alt="Kristen Bell" loading="lazy"></div>
-            <div class="tile"><img src="movies/badmoms.png" alt="Bad Moms" loading="lazy"></div>
-            <div class="tile"><img src="actors/mila_kunis.png" alt="Mila Kunis" loading="lazy"></div>
-            <div class="tile"><img src="movies/ted.png" alt="Ted" loading="lazy"></div>
-            <div class="tile"><img src="actors/mark_wahlberg.png" alt="Mark Wahlberg" loading="lazy"></div>
-            <div class="tile"><img src="movies/thedeparted.png" alt="The Departed" loading="lazy"></div>
-            <div class="tile"><img src="actors/jason_bateman.png" alt="Jason Bateman" loading="lazy"></div>
-            <div class="tile"><img src="movies/identitythief.png" alt="Identity Thief" loading="lazy"></div>
-            <div class="tile"><img src="actors/Melissa_McCarthy.png" alt="Melissa McCarthy" loading="lazy"></div>
-        </div>
-
-        <!-- Admin Panel commented out as per your feedback -->
-        <!--
-        <button class="admin-toggle">⚙️ Open Admin Panel</button>
-        <div class="admin-panel" style="display: none;">
-            <h2>🔧 Game Admin Panel</h2>
-            <p>Upload files, set sequence, and customize your game</p>
-            <section><h3>📁 Upload PNG Files</h3><div class="upload-area"><p>📎 Drag & Drop PNG Files Here</p><p>Or click to browse</p><p>Supports multiple</p><input type="file" id="fileInput" accept=".png" multiple></div></section>
-            <section><h3>🎭 Choose Anchor Actor</h3><p>Select which actor appears in positions 1 and 17:</p><select id="anchorActor"><option value="">Choose...</option><option value="Melissa_McCarthy">Melissa McCarthy</option><option value="anna_kendrick">Anna Kendrick</option><option value="jason_bateman">Jason Bateman</option><option value="kristen_bell">Kristen Bell</option><option value="mark_wahlberg">Mark Wahlberg</option><option value="mila_kunis">Mila Kunis</option><option value="rebel_wilson">Rebel Wilson</option><option value="vera_farmiga">Vera Farmiga</option></select></section>
-            <section><h3>🎬 Build Game Sequence</h3><p>Create the 15-step sequence:</p><div id="sequenceBuilder"></div><button id="addStep">+ Add Step</button><button id="clearSequence">Clear All</button></section>
-            <section><h3>⚙️ Game Settings</h3><label>SMS Number: <input type="text" id="smsNumber"></label><br><label>Logo File: <input type="file" id="logoFile" accept=".png"></label><br><img src="connact_logo.png" alt="Current Logo" class="logo-preview"></section>
-            <button id="saveGame">💾 Save & Update Game</button><button id="exportConfig">📥 Export Configuration</button><button class="admin-close">✖ Close</button>
-        </div>
-        -->
+    <div class="logo-container">
+        <img id="gameLogo" src="connact_logo.png" alt="Game Logo" onerror="this.style.display='none';">
     </div>
+
+    <div class="game-info">
+        <div id="attemptCounter">Attempt 1 of 7</div>
+        <div id="gameMessage" class="message" style="display: none;"></div>
+        <div id="winMessage" class="win-message" style="display: none;"></div>
+    </div>
+
+    <div class="game-container">
+        <div class="sequence-grid" id="sequenceGrid"></div>
+        <button id="enterButton" class="enter-button" onclick="submitMove()" style="display: none;">Enter</button>
+        <div class="png-grid" id="pngGrid"></div>
+    </div>
+
+    <button class="admin-access-btn" onclick="openAdmin()" title="Admin Panel">⚙️</button>
+
+    <div id="adminPanel" class="admin-panel">
+        <div class="admin-content">
+            <div class="admin-header">
+                <h1>🔧 Game Admin Panel</h1>
+                <p>Upload files, set sequence, and customize your game</p>
+            </div>
+            
+            <div class="admin-section">
+                <h3>📁 Upload PNG Files</h3>
+                <div class="file-upload-zone" id="fileUploadZone">
+                    <input type="file" id="fileInput" multiple accept=".png" style="display: none;">
+                    <h4>📎 Drag & Drop PNG Files Here</h4>
+                    <p>Or click to browse for actor and movie images</p>
+                    <small>Supports multiple file upload</small>
+                </div>
+                <div id="uploadedFiles" class="uploaded-files" style="display: none;">
+                    <div id="filesList"></div>
+                </div>
+            </div>
+
+            <div class="admin-section">
+                <h3>🎭 Choose Anchor Actor</h3>
+                <p>Select which actor appears in position 1:</p>
+                <select id="anchorSelect" class="admin-input">
+                    <option value="">Choose anchor actor...</option>
+                </select>
+            </div>
+
+            <div class="admin-section">
+                <h3>🎬 Build Game Sequence</h3>
+                <p>Create the 15-step sequence:</p>
+                <div class="sequence-builder">
+                    <div id="sequenceSteps"></div>
+                </div>
+                <button class="save-btn" onclick="addSequenceStep()" style="margin: 10px; padding: 10px 20px;">+ Add Step</button>
+                <button class="export-btn" onclick="clearSequence()" style="margin: 10px; padding: 10px 20px;">Clear All</button>
+            </div>
+
+            <div class="admin-section">
+                <h3>⚙️ Game Settings</h3>
+                <label>SMS Number:</label>
+                <input type="text" id="smsNumber" class="admin-input" value="+61459754708">
+                
+                <label>Logo File:</label>
+                <input type="text" id="logoFile" class="admin-input" value="connact_logo.png">
+            </div>
+
+            <div class="admin-buttons">
+                <button class="save-btn" onclick="saveGameConfig()">💾 Save & Update Game</button>
+                <button class="export-btn" onclick="exportGame()">📥 Export Configuration</button>
+                <button class="close-btn" onclick="closeAdmin()">✖ Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game Configuration
+        var gameConfig = {
+            anchor: {
+                name: "Jason Bateman",
+                file: "actors/jason_bateman.png"
+            },
+            sequence: [
+                {name: "Identity Thief", file: "movies/identitythief.png", type: "movie"},
+                {name: "Melissa McCarthy", file: "actors/Melissa_McCarthy.png", type: "actor"},
+                {name: "Bridesmaids", file: "movies/bridesmaids.png", type: "movie"},
+                {name: "Rebel Wilson", file: "actors/rebel_wilson.png", type: "actor"},
+                {name: "Pitch Perfect", file: "movies/pitchperfect.png", type: "movie"},
+                {name: "Anna Kendrick", file: "actors/anna_kendrick.png", type: "actor"},
+                {name: "Up in the Air", file: "movies/upintheair.png", type: "movie"},
+                {name: "Vera Farmiga", file: "actors/vera_farmiga.png", type: "actor"},
+                {name: "The Departed", file: "movies/thedeparted.png", type: "movie"},
+                {name: "Mark Wahlberg", file: "actors/mark_wahlberg.png", type: "actor"},
+                {name: "Ted", file: "movies/ted.png", type: "movie"},
+                {name: "Mila Kunis", file: "actors/mila_kunis.png", type: "actor"},
+                {name: "Bad Moms", file: "movies/badmoms.png", type: "movie"},
+                {name: "Kristen Bell", file: "actors/kristen_bell.png", type: "actor"},
+                {name: "Couples Retreat", file: "movies/couplesretreat.png", type: "movie"}
+            ],
+            smsNumber: "+61459754708",
+            logoFile: "connact_logo.png"
+        };
+
+        // Variables
+        var uploadedFiles = new Map();
+        var currentAttempt = 1;
+        var maxAttempts = 7;
+        var gameWon = false;
+        var revealInProgress = false;
+        var correctAnswers = {};
+        var placedImages = new Map();
+        var sequencePositions = [1, 2, 3, 4, 8, 7, 6, 5, 9, 10, 11, 12, 16, 15, 14, 13]; // Zigzag order
+        var currentPosition = 1;
+        var draggedTile = null;
+
+        // Initialize game
+        function initializeGame() {
+            generateCorrectAnswers();
+            createInitialSequence();
+            createPngGrid();
+            attachEventListeners();
+        }
+
+        function generateCorrectAnswers() {
+            correctAnswers = {};
+            for (var i = 0; i < gameConfig.sequence.length; i++) {
+                var pos = sequencePositions[i + 1]; // Start from position 2
+                correctAnswers['dropTile' + pos] = gameConfig.sequence[i].file;
+            }
+        }
+
+        function createInitialSequence() {
+            var sequenceGrid = document.getElementById('sequenceGrid');
+            sequenceGrid.innerHTML = '';
+
+            // Fixed Jason Bateman at position 1
+            var anchorTile = document.createElement('div');
+            anchorTile.className = 'tile';
+            anchorTile.style.position = 'relative';
+            anchorTile.setAttribute('data-src', gameConfig.anchor.file);
+            anchorTile.setAttribute('data-name', gameConfig.anchor.name);
+
+            var img = document.createElement('img');
+            img.src = gameConfig.anchor.file;
+            img.alt = gameConfig.anchor.name;
+            img.onerror = function() {
+                anchorTile.innerHTML = '<div style="padding:10px; text-align:center; color:#999; font-size:10px;">' + gameConfig.anchor.name + '<br><small>(Image not found)</small></div>';
+            };
+
+            anchorTile.appendChild(img);
+            sequenceGrid.appendChild(anchorTile);
+
+            // Initial movie drop zone at position 2
+            var dropZone = document.createElement('div');
+            dropZone.className = 'drop-zone';
+            dropZone.id = 'dropTile2';
+            dropZone.innerHTML = '<span style="color: #007bff; font-weight: bold; font-size: 12px;">Movie</span>';
+            sequenceGrid.appendChild(dropZone);
+
+            // Center the initial two tiles
+            sequenceGrid.style.justifyContent = 'center';
+        }
+
+        function createPngGrid() {
+            var pngGrid = document.getElementById('pngGrid');
+            pngGrid.innerHTML = '';
+
+            var allImages = gameConfig.sequence.slice();
+            for (var i = 0; i < allImages.length; i++) {
+                var item = allImages[i];
+                var tile = document.createElement('div');
+                tile.className = 'png-tile';
+                tile.draggable = true;
+                tile.setAttribute('data-src', item.file);
+                tile.setAttribute('data-name', item.name);
+
+                var img = document.createElement('img');
+                img.src = item.file;
+                img.alt = item.name;
+                img.onerror = function() {
+                    this.parentNode.innerHTML = '<div style="padding:5px; text-align:center; color:#999; font-size:8px;">' + this.alt + '</div>';
+                };
+
+                tile.appendChild(img);
+                pngGrid.appendChild(tile);
+            }
+        }
+
+        function attachEventListeners() {
+            var dropZones = document.querySelectorAll('.drop-zone');
+            var imageElements = document.querySelectorAll('.png-tile');
+
+            for (var i = 0; i < imageElements.length; i++) {
+                imageElements[i].addEventListener('dragstart', function(e) {
+                    if (gameWon || revealInProgress) return;
+                    
+                    draggedTile = this;
+                    var imgSrc = this.getAttribute('data-src');
+                    var imgName = this.getAttribute('data-name');
+                    e.dataTransfer.setData('text/plain', imgSrc);
+                    e.dataTransfer.setData('text/name', imgName);
+                    e.dataTransfer.effectAllowed = 'move';
+                    document.getElementById('enterButton').style.display = 'block';
+                });
+
+                imageElements[i].addEventListener('dragend', function(e) {
+                    if (!document.querySelector('.drop-zone.drag-over')) {
+                        document.getElementById('enterButton').style.display = 'none';
+                    }
+                });
+            }
+
+            for (var i = 0; i < dropZones.length; i++) {
+                dropZones[i].addEventListener('dragover', function(e) {
+                    if (gameWon || revealInProgress) return;
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                    this.classList.add('drag-over');
+                });
+                
+                dropZones[i].addEventListener('dragleave', function(e) {
+                    if (!this.contains(e.relatedTarget)) {
+                        this.classList.remove('drag-over');
+                        document.getElementById('enterButton').style.display = 'none';
+                    }
+                });
+                
+                dropZones[i].addEventListener('drop', function(e) {
+                    if (gameWon || revealInProgress) return;
+                    
+                    e.preventDefault();
+                    this.classList.remove('drag-over');
+                    
+                    var imageSrc = e.dataTransfer.getData('text/plain');
+                    var imageName = e.dataTransfer.getData('text/name');
+                    if (imageSrc && !this.querySelector('img')) {
+                        draggedTile.style.opacity = '0.5'; // Visual feedback
+                        document.getElementById('enterButton').style.display = 'block';
+                    }
+                });
+            }
+        }
+
+        function submitMove() {
+            if (!draggedTile || !document.querySelector('.drop-zone.drag-over')) return;
+
+            var dropZone = document.querySelector('.drop-zone.drag-over');
+            var imageSrc = draggedTile.getAttribute('data-src');
+            var imageName = draggedTile.getAttribute('data-name');
+            var correctImage = correctAnswers[dropZone.id];
+
+            if (imageSrc === correctImage) {
+                placeImageInTile(dropZone, imageSrc, imageName);
+                draggedTile.parentNode.removeChild(draggedTile);
+                addNextTile();
+                checkIfAllTilesFilled();
+            } else {
+                dropZone.classList.remove('drag-over');
+                draggedTile.style.opacity = '1';
+                document.getElementById('gameMessage').innerHTML = 'It was wrong, you\'ve ' + (maxAttempts - currentAttempt) + ' more attempts to go, good luck!';
+                document.getElementById('gameMessage').style.display = 'block';
+                document.getElementById('enterButton').style.display = 'none';
+                if (currentAttempt < maxAttempts) {
+                    currentAttempt++;
+                    document.getElementById('attemptCounter').textContent = 'Attempt ' + currentAttempt + ' of ' + maxAttempts;
+                }
+            }
+        }
+
+        function placeImageInTile(dropZone, imageSrc, imageName) {
+            dropZone.innerHTML = '';
+            
+            placedImages.set(dropZone.id, {src: imageSrc, name: imageName});
+            
+            var img = document.createElement('img');
+            img.src = imageSrc;
+            img.alt = imageName;
+            img.style.width = '92px';
+            img.style.height = '92px';
+            img.style.objectFit = 'cover';
+            img.style.borderRadius = '4px';
+            
+            img.onerror = function() {
+                dropZone.innerHTML = '<div style="padding:10px; color:#999; font-size:10px;">' + imageName + '<br><small>(Image not found)</small></div>';
+            };
+            
+            var clearButton = document.createElement('div');
+            clearButton.className = 'clear-button';
+            clearButton.innerHTML = '×';
+            clearButton.title = 'Clear image';
+            clearButton.addEventListener('click', function() { 
+                clearTile(dropZone); 
+            });
+            
+            dropZone.appendChild(img);
+            dropZone.appendChild(clearButton);
+        }
+
+        function clearTile(tile) {
+            var tileNumber = tile.id.replace('dropTile', '');
+            var tileNum = parseInt(tileNumber);
+            
+            var placedImage = placedImages.get(tile.id);
+            if (placedImage) {
+                // No re-enable needed
+            }
+            
+            var isMovieTile = tileNum % 2 === 0;
+            var color = isMovieTile ? '#007bff' : '#28a745';
+            var label = isMovieTile ? 'Movie' : 'Actor';
+            
+            tile.innerHTML = '<span style="color: ' + color + '; font-weight: bold; font-size: 12px;">' + label + '</span>';
+            placedImages.delete(tile.id);
+            checkIfAllTilesFilled();
+        }
+
+        function addNextTile() {
+            currentPosition++;
+            if (currentPosition > 16) return;
+
+            var sequenceGrid = document.getElementById('sequenceGrid');
+            var newDropZone = document.createElement('div');
+            newDropZone.className = 'drop-zone';
+            newDropZone.id = 'dropTile' + sequencePositions[currentPosition - 1];
+
+            var isMovieTile = (currentPosition - 1) % 2 === 0;
+            var color = isMovieTile ? '#007bff' : '#28a745';
+            var label = isMovieTile ? 'Movie' : 'Actor';
+
+            newDropZone.innerHTML = '<span style="color: ' + color + '; font-weight: bold; font-size: 12px;">' + label + '</span>';
+            sequenceGrid.appendChild(newDropZone);
+
+            // Adjust layout to move left as tiles are added
+            var tiles = sequenceGrid.children;
+            var totalWidth = (tiles.length - 1) * 105; // 100px tile + 5px margin
+            sequenceGrid.style.transform = 'translateX(' + (210 - totalWidth / 2) + 'px)'; // Center initially, shift left
+        }
+
+        function checkIfAllTilesFilled() {
+            var totalTiles = Object.keys(correctAnswers).length;
+            var filledTiles = placedImages.size;
+            var revealButton = document.getElementById('revealButton');
+            
+            revealButton.disabled = filledTiles < totalTiles;
+            if (filledTiles === totalTiles) {
+                revealButton.textContent = "Reveal Answers";
+            } else {
+                revealButton.textContent = "Place actors & movies to connect the sequence";
+            }
+        }
+
+        function revealAnswers() {
+            if (gameWon || revealInProgress) return;
+            
+            revealInProgress = true;
+            var revealButton = document.getElementById('revealButton');
+            revealButton.disabled = true;
+            revealButton.textContent = "Checking...";
+            
+            var correctCount = 0;
+            var totalTiles = Object.keys(correctAnswers).length;
+            var incorrectTiles = [];
+            
+            placedImages.forEach(function(imageData, tileId) {
+                var correctImage = correctAnswers[tileId];
+                var dropZone = document.getElementById(tileId);
+                
+                if (imageData.src === correctImage) {
+                    correctCount++;
+                    var clearButton = dropZone.querySelector('.clear-button');
+                    if (clearButton) clearButton.remove();
+                    
+                    var img = dropZone.querySelector('img');
+                    if (img) {
+                        img.style.border = '2px solid green';
+                    }
+                } else {
+                    incorrectTiles.push({tileId: tileId, dropZone: dropZone});
+                }
+            });
+            
+            for (var i = 0; i < incorrectTiles.length; i++) {
+                var item = incorrectTiles[i];
+                var img = item.dropZone.querySelector('img');
+                if (img) {
+                    img.style.border = '2px solid red';
+                    img.style.opacity = '0.5';
+                }
+            }
+            
+            setTimeout(function() {
+                for (var i = 0; i < incorrectTiles.length; i++) {
+                    var item = incorrectTiles[i];
+                    var placedImage = placedImages.get(item.tileId);
+                    if (placedImage) {
+                        // No re-enable needed
+                    }
+                    
+                    var tileNumber = item.tileId.replace('dropTile', '');
+                    var tileNum = parseInt(tileNumber);
+                    
+                    var isMovieTile = tileNum % 2 === 0;
+                    var color = isMovieTile ? '#007bff' : '#28a745';
+                    var label = isMovieTile ? 'Movie' : 'Actor';
+                    
+                    item.dropZone.innerHTML = '<span style="color: ' + color + '; font-weight: bold; font-size: 12px;">' + label + '</span>';
+                    placedImages.delete(item.tileId);
+                }
+                
+                if (correctCount === totalTiles) {
+                    gameWon = true;
+                    showWinMessage();
+                } else if (currentAttempt >= maxAttempts) {
+                    showGameOverMessage();
+                } else {
+                    showAttemptMessage(correctCount, totalTiles);
+                    prepareNextAttempt();
+                }
+            }, 2000);
+        }
+
+        function prepareNextAttempt() {
+            currentAttempt++;
+            document.getElementById('attemptCounter').textContent = 'Attempt ' + currentAttempt + ' of ' + maxAttempts;
+            revealInProgress = false;
+            checkIfAllTilesFilled();
+        }
+        
+        function showAttemptMessage(correct, total) {
+            var gameMessage = document.getElementById('gameMessage');
+            gameMessage.innerHTML = 'It was wrong, you\'ve ' + (maxAttempts - currentAttempt) + ' more attempts to go, good luck!';
+            gameMessage.style.display = 'block';
+        }
+        
+        function showGameOverMessage() {
+            var gameMessage = document.getElementById('gameMessage');
+            gameMessage.textContent = 'Game Over! You have used all ' + maxAttempts + ' attempts.';
+            gameMessage.style.display = 'block';
+            gameMessage.style.background = '#f8d7da';
+            gameMessage.style.borderColor = '#f5c6cb';
+            gameMessage.style.color = '#721c24';
+            document.getElementById('revealButton').style.display = 'none';
+        }
+        
+        function showWinMessage() {
+            var sequenceNames = [];
+            for (var i = 0; i < gameConfig.sequence.length; i++) {
+                sequenceNames.push(gameConfig.sequence[i].name);
+            }
+            var progression = gameConfig.anchor.name + ' → ' + sequenceNames.join(' → ');
+            var winMessage = document.getElementById('winMessage');
+            var gameMessage = document.getElementById('gameMessage');
+            
+            gameMessage.style.display = 'none';
+            
+            winMessage.innerHTML = '<h2>🎉 Congratulations! 🎉</h2><p><strong>Movie Sequence ' + currentAttempt + '/7</strong></p><p>' + progression + '</p><button class="sms-button" onclick="sendSMS()">Share Results</button>';
+            winMessage.style.display = 'block';
+            
+            document.getElementById('attemptCounter').textContent = 'Completed in ' + currentAttempt + (currentAttempt === 1 ? ' attempt!' : ' attempts!');
+            document.getElementById('revealButton').style.display = 'none';
+        }
+        
+        function sendSMS() {
+            var sequenceNames = [];
+            for (var i = 0; i < gameConfig.sequence.length; i++) {
+                sequenceNames.push(gameConfig.sequence[i].name);
+            }
+            var progression = gameConfig.anchor.name + ' → ' + sequenceNames.join(' → ');
+            var attemptsText = currentAttempt === 1 ? "1 attempt" : currentAttempt + " attempts";
+            var message = 'Movie Sequence ' + currentAttempt + '/7\n\n' + progression + '\n\nCompleted in ' + attemptsText + '!';
+            
+            var smsURL = 'sms:' + gameConfig.smsNumber + '?body=' + encodeURIComponent(message);
+            window.open(smsURL, '_blank');
+        }
+
+        // ADMIN FUNCTIONS
+        function openAdmin() {
+            document.getElementById('adminPanel').style.display = 'block';
+            loadAdminData();
+        }
+
+        function closeAdmin() {
+            document.getElementById('adminPanel').style.display = 'none';
+        }
+
+        function loadAdminData() {
+            populateAnchorSelect();
+            loadSequenceBuilder();
+            document.getElementById('smsNumber').value = gameConfig.smsNumber;
+            document.getElementById('logoFile').value = gameConfig.logoFile;
+        }
+
+        function populateAnchorSelect() {
+            var anchorSelect = document.getElementById('anchorSelect');
+            anchorSelect.innerHTML = '<option value="">Choose anchor actor...</option>';
+            
+            var currentAnchor = document.createElement('option');
+            currentAnchor.value = gameConfig.anchor.file;
+            currentAnchor.textContent = gameConfig.anchor.name;
+            currentAnchor.selected = true;
+            anchorSelect.appendChild(currentAnchor);
+            
+            uploadedFiles.forEach(function(fileData, fileName) {
+                if (fileData.type === 'actor' && fileData.file !== gameConfig.anchor.file) {
+                    var option = document.createElement('option');
+                    option.value = fileData.file;
+                    option.textContent = fileData.name;
+                    anchorSelect.appendChild(option);
+                }
+            });
+        }
+
+        function loadSequenceBuilder() {
+            var container = document.getElementById('sequenceSteps');
+            container.innerHTML = '';
+            
+            for (var i = 0; i < gameConfig.sequence.length; i++) {
+                addSequenceStepWithData(gameConfig.sequence[i], i + 2);
+            }
+        }
+
+        function addSequenceStep() {
+            var container = document.getElementById('sequenceSteps');
+            var stepNumber = container.children.length + 2;
+            addSequenceStepWithData(null, stepNumber);
+        }
+
+        function addSequenceStepWithData(data, stepNumber) {
+            var container = document.getElementById('sequenceSteps');
+            
+            var step = document.createElement('div');
+            step.className = 'sequence-step';
+            
+            var isMovieTile = stepNumber % 2 === 0;
+            var stepColor = isMovieTile ? '#007bff' : '#28a745';
+            
+            var stepNumDiv = document.createElement('div');
+            stepNumDiv.className = 'step-number';
+            stepNumDiv.style.background = stepColor;
+            stepNumDiv.textContent = stepNumber;
+            
+            var stepContent = document.createElement('div');
+            stepContent.className = 'step-content';
+            
+            var nameInput = document.createElement('input');
+            nameInput.type = 'text';
+            nameInput.placeholder = (isMovieTile ? 'Movie' : 'Actor') + ' Name';
+            nameInput.value = data ? data.name : '';
+            nameInput.onchange = function() { 
+                updateSequenceStep(stepNumber - 2, 'name', this.value); 
+            };
+            
+            var fileSelect = document.createElement('select');
+            fileSelect.onchange = function() { 
+                updateSequenceStep(stepNumber - 2, 'file', this.value); 
+            };
+            
+            var defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.textContent = 'Select file...';
+            fileSelect.appendChild(defaultOption);
+            
+            uploadedFiles.forEach(function(fileData, fileName) {
+                var option = document.createElement('option');
+                option.value = fileData.file;
+                option.textContent = fileData.name + ' (' + fileData.type + ')';
+                if (data && data.file === fileData.file) {
+                    option.selected = true;
+                }
+                fileSelect.appendChild(option);
+            });
+            
+            stepContent.appendChild(nameInput);
+            stepContent.appendChild(fileSelect);
+            
+            var removeBtn = document.createElement('button');
+            removeBtn.className = 'remove-file';
+            removeBtn.textContent = 'Remove';
+            removeBtn.onclick = function() { 
+                removeSequenceStep(stepNumber - 2); 
+            };
+            
+            step.appendChild(stepNumDiv);
+            step.appendChild(stepContent);
+            step.appendChild(removeBtn);
+            
+            container.appendChild(step);
+        }
+
+        function updateSequenceStep(index, field, value) {
+            if (!gameConfig.sequence[index]) {
+                gameConfig.sequence[index] = {name: '', file: '', type: ''};
+            }
+            
+            gameConfig.sequence[index][field] = value;
+            
+            var stepNumber = index + 2;
+            gameConfig.sequence[index].type = stepNumber % 2 === 0 ? 'movie' : 'actor';
+        }
+
+        function removeSequenceStep(index) {
+            gameConfig.sequence.splice(index, 1);
+            loadSequenceBuilder();
+        }
+
+        function clearSequence() {
+            gameConfig.sequence = [];
+            loadSequenceBuilder();
+        }
+
+        function saveGameConfig() {
+            var anchorSelect = document.getElementById('anchorSelect');
+            if (anchorSelect.value) {
+                var selectedFile = anchorSelect.value;
+                var selectedOption = anchorSelect.selectedOptions[0];
+                gameConfig.anchor = {
+                    name: selectedOption.textContent.split(' (')[0],
+                    file: selectedFile
+                };
+            }
+            
+            gameConfig.smsNumber = document.getElementById('smsNumber').value;
+            gameConfig.logoFile = document.getElementById('logoFile').value;
+            
+            document.getElementById('gameLogo').src = gameConfig.logoFile;
+            
+            initializeGame();
+            
+            alert('Game updated successfully!');
+            closeAdmin();
+        }
+
+        function exportGame() {
+            var configJSON = JSON.stringify(gameConfig, null, 2);
+            var content = 'Game Configuration:\n\n' + configJSON;
+            
+            var blob = new Blob([content], { type: 'text/plain' });
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = 'game-config.json';
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            alert('Configuration exported successfully!');
+        }
+
+        function setupFileUpload() {
+            var fileUploadZone = document.getElementById('fileUploadZone');
+            var fileInput = document.getElementById('fileInput');
+
+            fileUploadZone.addEventListener('click', function() {
+                fileInput.click();
+            });
+
+            fileUploadZone.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                fileUploadZone.classList.add('dragover');
+            });
+
+            fileUploadZone.addEventListener('dragleave', function() {
+                fileUploadZone.classList.remove('dragover');
+            });
+
+            fileUploadZone.addEventListener('drop', function(e) {
+                e.preventDefault();
+                fileUploadZone.classList.remove('dragover');
+                handleFiles(e.dataTransfer.files);
+            });
+
+            fileInput.addEventListener('change', function(e) {
+                handleFiles(e.target.files);
+            });
+        }
+
+        function handleFiles(files) {
+            for (var i = 0; i < files.length; i++) {
+                var file = files[i];
+                if (file.type === 'image/png') {
+                    var reader = new FileReader();
+                    reader.onload = function(e) {
+                        var fileName = file.name.replace('.png', '');
+                        var cleanName = fileName.replace(/_/g, ' ').replace(/\b\w/g, function(l) { 
+                            return l.toUpperCase(); 
+                        });
+                        
+                        var type = fileName.toLowerCase().includes('actor') || 
+                                  (fileName.includes('_') && !fileName.toLowerCase().includes('movie')) ? 'actor' : 'movie';
+                        
+                        var fileData = {
+                            name: cleanName,
+                            file: type + 's/' + file.name,
+                            type: type,
+                            blob: e.target.result
+                        };
+                        
+                        uploadedFiles.set(file.name, fileData);
+                        displayUploadedFiles();
+                        populateAnchorSelect();
+                    };
+                    reader.readAsDataURL(file);
+                }
+            }
+        }
+
+        function displayUploadedFiles() {
+            var container = document.getElementById('uploadedFiles');
+            var filesList = document.getElementById('filesList');
+            
+            if (uploadedFiles.size === 0) {
+                container.style.display = 'none';
+                return;
+            }
+            
+            container.style.display = 'block';
+            filesList.innerHTML = '';
+            
+            uploadedFiles.forEach(function(fileData, fileName) {
+                var fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                
+                var img = document.createElement('img');
+                img.src = fileData.blob;
+                img.className = 'file-preview';
+                img.alt = fileData.name;
+                
+                var fileInfo = document.createElement('div');
+                fileInfo.className = 'file-info';
+                
+                var fileNameDiv = document.createElement('div');
+                fileNameDiv.className = 'file-name';
+                fileNameDiv.textContent = fileData.name;
+                
+                var fileTypeDiv = document.createElement('div');
+                fileTypeDiv.className = 'file-type';
+                fileTypeDiv.textContent = fileData.type.toUpperCase() + ' • ' + fileName;
+                
+                fileInfo.appendChild(fileNameDiv);
+                fileInfo.appendChild(fileTypeDiv);
+                
+                var removeBtn = document.createElement('button');
+                removeBtn.className = 'remove-file';
+                removeBtn.textContent = 'Remove';
+                removeBtn.onclick = function() { 
+                    removeUploadedFile(fileName); 
+                };
+                
+                fileItem.appendChild(img);
+                fileItem.appendChild(fileInfo);
+                fileItem.appendChild(removeBtn);
+                
+                filesList.appendChild(fileItem);
+            });
+        }
+
+        function removeUploadedFile(fileName) {
+            uploadedFiles.delete(fileName);
+            displayUploadedFiles();
+            populateAnchorSelect();
+        }
+
+        // Initialize everything
+        window.addEventListener('load', function() {
+            try {
+                var urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.get('admin') === 'true') {
+                    openAdmin();
+                }
+                
+                setupFileUpload();
+                initializeGame();
+                
+                console.log('Game initialized successfully');
+            } catch (error) {
+                console.error('Error initializing game:', error);
+            }
+        });
+    </script>
 </body>
 </html>
