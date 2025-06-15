@@ -14,40 +14,69 @@
             <p>Place actors & movies to connect the sequence</p>
         </header>
 
-        <!-- Game Grid: 17 tiles (9 actors, 8 movies) -->
-        <div class="game-grid">
-            <div class="tile"><img src="actors/Melissa_McCarthy.png" alt="Melissa McCarthy" loading="lazy"></div>
-            <div class="tile"><img src="movies/bridesmaids.png" alt="Bridesmaids" loading="lazy"></div>
-            <div class="tile"><img src="actors/rebel_wilson.png" alt="Rebel Wilson" loading="lazy"></div>
-            <div class="tile"><img src="movies/pitchperfect.png" alt="Pitch Perfect" loading="lazy"></div>
-            <div class="tile"><img src="actors/anna_kendrick.png" alt="Anna Kendrick" loading="lazy"></div>
-            <div class="tile"><img src="movies/upintheair.png" alt="Up in the Air" loading="lazy"></div>
-            <div class="tile"><img src="actors/vera_farmiga.png" alt="Vera Farmiga" loading="lazy"></div>
-            <div class="tile"><img src="movies/couplesretreat.png" alt="Couples Retreat" loading="lazy"></div>
-            <div class="tile"><img src="actors/kristen_bell.png" alt="Kristen Bell" loading="lazy"></div>
-            <div class="tile"><img src="movies/badmoms.png" alt="Bad Moms" loading="lazy"></div>
-            <div class="tile"><img src="actors/mila_kunis.png" alt="Mila Kunis" loading="lazy"></div>
-            <div class="tile"><img src="movies/ted.png" alt="Ted" loading="lazy"></div>
-            <div class="tile"><img src="actors/mark_wahlberg.png" alt="Mark Wahlberg" loading="lazy"></div>
-            <div class="tile"><img src="movies/thedeparted.png" alt="The Departed" loading="lazy"></div>
-            <div class="tile"><img src="actors/jason_bateman.png" alt="Jason Bateman" loading="lazy"></div>
-            <div class="tile"><img src="movies/identitythief.png" alt="Identity Thief" loading="lazy"></div>
-            <div class="tile"><img src="actors/Melissa_McCarthy.png" alt="Melissa McCarthy" loading="lazy"></div>
+        <!-- Game Grid -->
+        <div class="game-grid" droppable="true">
+            <!-- Tiles will be populated by JavaScript -->
         </div>
 
-        <!-- Admin Panel commented out as per your feedback -->
-        <!--
-        <button class="admin-toggle">⚙️ Open Admin Panel</button>
+        <!-- Admin Panel Button -->
+        <button class="admin-toggle">⚙️</button>
+
+        <!-- Admin Panel -->
         <div class="admin-panel" style="display: none;">
             <h2>🔧 Game Admin Panel</h2>
             <p>Upload files, set sequence, and customize your game</p>
-            <section><h3>📁 Upload PNG Files</h3><div class="upload-area"><p>📎 Drag & Drop PNG Files Here</p><p>Or click to browse</p><p>Supports multiple</p><input type="file" id="fileInput" accept=".png" multiple></div></section>
-            <section><h3>🎭 Choose Anchor Actor</h3><p>Select which actor appears in positions 1 and 17:</p><select id="anchorActor"><option value="">Choose...</option><option value="Melissa_McCarthy">Melissa McCarthy</option><option value="anna_kendrick">Anna Kendrick</option><option value="jason_bateman">Jason Bateman</option><option value="kristen_bell">Kristen Bell</option><option value="mark_wahlberg">Mark Wahlberg</option><option value="mila_kunis">Mila Kunis</option><option value="rebel_wilson">Rebel Wilson</option><option value="vera_farmiga">Vera Farmiga</option></select></section>
-            <section><h3>🎬 Build Game Sequence</h3><p>Create the 15-step sequence:</p><div id="sequenceBuilder"></div><button id="addStep">+ Add Step</button><button id="clearSequence">Clear All</button></section>
-            <section><h3>⚙️ Game Settings</h3><label>SMS Number: <input type="text" id="smsNumber"></label><br><label>Logo File: <input type="file" id="logoFile" accept=".png"></label><br><img src="connact_logo.png" alt="Current Logo" class="logo-preview"></section>
-            <button id="saveGame">💾 Save & Update Game</button><button id="exportConfig">📥 Export Configuration</button><button class="admin-close">✖ Close</button>
+
+            <!-- File Upload -->
+            <section>
+                <h3>📁 Upload PNG Files</h3>
+                <div class="upload-area" droppable="true">
+                    <p>📎 Drag & Drop PNG Files Here</p>
+                    <p>Or click to browse for actor and movie images</p>
+                    <p>Supports multiple file upload</p>
+                    <input type="file" id="fileInput" accept=".png" multiple>
+                </div>
+            </section>
+
+            <!-- Anchor Actor Selection -->
+            <section>
+                <h3>🎭 Choose Anchor Actor</h3>
+                <p>Select which actor appears in positions 1 and 17:</p>
+                <select id="anchorActor">
+                    <option value="">Choose anchor actor...</option>
+                    <option value="Melissa_McCarthy">Melissa McCarthy</option>
+                    <option value="anna_kendrick">Anna Kendrick</option>
+                    <option value="jason_bateman">Jason Bateman</option>
+                    <option value="kristen_bell">Kristen Bell</option>
+                    <option value="mark_wahlberg">Mark Wahlberg</option>
+                    <option value="mila_kunis">Mila Kunis</option>
+                    <option value="rebel_wilson">Rebel Wilson</option>
+                    <option value="vera_farmiga">Vera Farmiga</option>
+                </select>
+            </section>
+
+            <!-- Sequence Builder -->
+            <section>
+                <h3>🎬 Build Game Sequence</h3>
+                <p>Create the 15-step sequence:</p>
+                <div id="sequenceBuilder"></div>
+                <button id="addStep">+ Add Step</button>
+                <button id="clearSequence">Clear All</button>
+            </section>
+
+            <!-- Game Settings -->
+            <section>
+                <h3>⚙️ Game Settings</h3>
+                <label>SMS Number: <input type="text" id="smsNumber"></label><br>
+                <label>Logo File: <input type="file" id="logoFile" accept=".png"></label><br>
+                <img src="connact_logo.png" alt="Current Logo" class="logo-preview">
+            </section>
+
+            <!-- Admin Actions -->
+            <button id="saveGame">💾 Save & Update Game</button>
+            <button id="exportConfig">📥 Export Configuration</button>
+            <button class="admin-close">✖ Close</button>
         </div>
-        -->
     </div>
 </body>
 </html>

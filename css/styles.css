@@ -22,19 +22,19 @@ body {
 header {
     text-align: center;
     margin-bottom: 20px;
-    padding: 10px;
+    padding: 15px;
     background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 header h1 {
-    font-size: 1.8em;
+    font-size: 2em;
     color: #2c3e50;
 }
 
 header p {
-    font-size: 1.2em;
+    font-size: 1.3em;
     color: #7f8c8d;
 }
 
@@ -44,28 +44,39 @@ header p {
     flex-wrap: nowrap;
     justify-content: center;
     align-items: center;
-    gap: 8px; /* Increased for better spacing */
+    gap: 10px;
     width: 100%;
     padding: 15px;
     background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    overflow-x: auto; /* Fallback for very narrow screens */
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow-x: auto;
+    min-height: 120px;
+}
+
+.game-grid[droppable="true"] {
+    min-height: 120px;
 }
 
 .game-grid .tile {
     flex: 0 0 auto;
-    width: 80px; /* Larger tiles for desktop */
-    height: 80px;
+    width: 100px;
+    height: 100px;
     overflow: hidden;
     border: 2px solid #ecf0f1;
-    border-radius: 10px; /* Rounded corners to match your design */
+    border-radius: 15px;
     background-color: #fff;
     transition: transform 0.2s;
+    cursor: move;
 }
 
 .game-grid .tile:hover {
-    transform: scale(1.05); /* Subtle hover effect */
+    transform: scale(1.05);
+}
+
+.game-grid .tile.dragover {
+    border-color: #3498db;
+    background-color: #e8f4f8;
 }
 
 .game-grid .tile img {
@@ -78,24 +89,24 @@ header p {
 /* Mobile Grid */
 @media screen and (max-width: 600px) {
     .game-grid {
-        gap: 4px; /* Reduced gap for mobile */
+        gap: 5px;
         padding: 10px;
     }
 
     .game-grid .tile {
-        width: calc((100vw - 68px) / 17); /* Fit 17 tiles with adjusted padding/gap */
-        height: calc((100vw - 68px) / 17);
-        min-width: 30px; /* Increased for visibility */
-        min-height: 30px;
+        width: calc((100vw - 90px) / 17);
+        height: calc((100vw - 90px) / 17);
+        min-width: 35px;
+        min-height: 35px;
         border-width: 1px;
     }
 
     .game-grid .tile:hover {
-        transform: none; /* Disable hover on mobile */
+        transform: none;
     }
 }
 
-/* Very small screens: Allow wrapping if necessary */
+/* Very small screens */
 @media screen and (max-width: 360px) {
     .game-grid {
         flex-wrap: wrap;
@@ -103,8 +114,161 @@ header p {
     }
 
     .game-grid .tile {
-        width: calc((100vw - 32px) / 9); /* 9 tiles per row */
-        height: calc((100vw - 32px) / 9);
-        margin-bottom: 4px;
+        width: calc((100vw - 40px) / 9);
+        height: calc((100vw - 40px) / 9);
+        margin-bottom: 5px;
+    }
+}
+
+/* Admin Panel */
+.admin-toggle {
+    display: block;
+    margin: 20px auto;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1.1em;
+}
+
+.admin-panel {
+    display: none;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
+}
+
+.admin-panel h2 {
+    font-size: 1.7em;
+    margin-bottom: 15px;
+}
+
+.admin-panel h3 {
+    font-size: 1.3em;
+    margin: 15px 0 10px;
+}
+
+.upload-area {
+    border: 2px dashed #ccc;
+    padding: 20px;
+    text-align: center;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+    min-height: 150px;
+}
+
+.upload-area[droppable="true"] {
+    background-color: #f1f1f1;
+}
+
+.upload-area.dragover {
+    background-color: #e0f7fa;
+    border-color: #3498db;
+}
+
+.upload-area p {
+    margin: 5px 0;
+}
+
+#fileInput {
+    margin-top: 10px;
+}
+
+#anchorActor,
+#smsNumber,
+#logoFile {
+    width: 100%;
+    padding: 8px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+#sequenceBuilder {
+    margin: 10px 0;
+    min-height: 100px;
+}
+
+.logo-preview {
+    max-width: 120px;
+    margin-top: 10px;
+}
+
+.admin-panel button {
+    padding: 10px 20px;
+    margin: 5px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+}
+
+#saveGame {
+    background-color: #28a745;
+    color: #fff;
+}
+
+#exportConfig {
+    background-color: #17a2b8;
+    color: #fff;
+}
+
+#addStep {
+    background-color: #007bff;
+    color: #fff;
+}
+
+#clearSequence {
+    background-color: #dc3545;
+    color: #fff;
+}
+
+.admin-close {
+    background-color: #6c757d;
+    color: #fff;
+}
+
+/* Mobile Admin Panel */
+@media screen and (max-width: 600px) {
+    .container {
+        padding: 10px;
+    }
+
+    header h1 {
+        font-size: 1.5em;
+    }
+
+    header p {
+        font-size: 1.1em;
+    }
+
+    .game-grid {
+        padding: 8px;
+    }
+
+    .admin-panel {
+        padding: 15px;
+    }
+
+    .admin-panel h2 {
+        font-size: 1.4em;
+    }
+
+    .admin-panel h3 {
+        font-size: 1.1em;
+    }
+
+    .upload-area {
+        padding: 15px;
+        min-height: 120px;
+    }
+
+    .admin-panel button {
+        width: 100%;
+        margin: 5px 0;
     }
 }
