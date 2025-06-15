@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image to Square PNG Converter</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            background: linear-gradient(45deg, #fff, #e0e0e0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .upload-area {
+            border: 3px dashed rgba(255, 255, 255, 0.5);
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .upload-area:hover {
+            border-color: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .upload-area.dragover {
+            border-color: #4CAF50;
+            background: rgba(76, 175, 80, 0.1);
+        }
+        
+        input[type="file"] {
+            display: none;
+        }
+        
+        .upload-text {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+        
+        .controls {
+            display: none;
+            margin-bottom: 30px;
+        }
+        
+        .control-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        
+        select, input[type="range"] {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 16px;
+        }
+        
+        select option {
+            background: #333;
+            color: white;
+        }
+        
+        input[type="range"] {
+            padding: 5px;
+        }
+        
+        .size-display {
+            text-align: center;
+            margin-top: 5px;
+            font-size: 1.1em;
+            color: #e0e0e0;
+        }
+        
+        .preview-container {
+            display: none;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .preview {
+            display: inline-block;
+            margin: 10px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        
+        .preview h3 {
+            margin-top: 0;
+            color: #e0e0e0;
+        }
+        
+        .preview img, .preview canvas {
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: 8px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+        }
+        
+        .preview canvas.draggable {
+            cursor: grab;
+            border: 2px solid rgba(76, 175, 80, 0.5);
+        }
+        
+        .preview canvas.dragging {
+            cursor: grabbing;
+            border-color: #4CAF50;
+        }
+        
+        .drag-info {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 0.8em;
+            color: #e0e0e0;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .drag-info.show {
+            opacity: 1;
+        }
+        
+        button {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            display: block;
+            margin: 20px auto;
+            min-width: 200px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+        
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .info {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🖼️ Square PNG Converter</h1>
+        
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-text">📁 Click here or drag & drop your image</div>
+            <div style="font-size: 0.9em; opacity: 0.8;">Supports JPG, PNG, GIF, WebP</div>
+            <input type="file" id="fileInput" accept="image/*">
+        </div>
+        
+        <div class="controls" id="controls">
+            <div class="control-group">
+                <label for="conversionMode">Conversion Mode:</label>
+                <select id="conversionMode">
+                    <option value="crop">Crop to Square (maintains original scale)</option>
+                    <option value="fit">Fit with Padding (shows full image)</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label for="outputSize">Output Size: <span id="sizeValue">1024</span>px</label>
+                <input type="range" id="outputSize" min="256" max="2048" value="1024" step="64">
+                <div class="size-display">Higher values = better quality but larger file size</div>
+            </div>
+        </div>
+        
+        <div class="preview-container" id="previewContainer">
+            <div class="preview">
+                <h3>Original</h3>
+                <img id="originalPreview" alt="Original image">
+            </div>
+            <div class="preview">
+                <h3>Square Preview</h3>
+                <canvas id="squarePreview"></canvas>
+                <div class="drag-info" id="dragInfo">🖱️ Drag to reposition (Crop mode only)</div>
+            </div>
+        </div>
+        
+        <button id="downloadBtn" style="display: none;">📥 Download Square PNG</button>
+        
+        <div class="info">
+            <strong>💡 Tips:</strong><br>
+            • <strong>Crop mode:</strong> Centers the image and crops to square - <strong>drag the preview to reposition!</strong><br>
+            • <strong>Fit mode:</strong> Scales image to fit in square with transparent padding<br>
+            • <strong>Drag to adjust:</strong> In crop mode, click and drag the preview image to position the face perfectly<br>
+            • Higher output sizes preserve more detail but create larger files<br>
+            • PNG format preserves transparency and quality
+        </div>
+    </div>
+
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const controls = document.getElementById('controls');
+        const previewContainer = document.getElementById('previewContainer');
+        const originalPreview = document.getElementById('originalPreview');
+        const squarePreview = document.getElementById('squarePreview');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const conversionMode = document.getElementById('conversionMode');
+        const outputSize = document.getElementById('outputSize');
+        const sizeValue = document.getElementById('sizeValue');
+        const dragInfo = document.getElementById('dragInfo');
+        
+        let currentImage = null;
+        let dragOffset = { x: 0, y: 0 };
+        let isDragging = false;
+        let lastMousePos = { x: 0, y: 0 };
+        
+        // Upload area interactions
+        uploadArea.addEventListener('click', () => fileInput.click());
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+        
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+        
+        // Size slider update
+        outputSize.addEventListener('input', (e) => {
+            sizeValue.textContent = e.target.value;
+            if (currentImage) {
+                updateSquarePreview();
+            }
+        });
+        
+        // Mode change
+        conversionMode.addEventListener('change', () => {
+            dragOffset = { x: 0, y: 0 }; // Reset drag offset when changing modes
+            updateDragInterface();
+            if (currentImage) {
+                updateSquarePreview();
+            }
+        });
+        
+        // Drag functionality for crop mode
+        squarePreview.addEventListener('mousedown', startDrag);
+        squarePreview.addEventListener('touchstart', startDrag);
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('touchmove', drag);
+        document.addEventListener('mouseup', stopDrag);
+        document.addEventListener('touchend', stopDrag);
+        
+        function updateDragInterface() {
+            const isCropMode = conversionMode.value === 'crop';
+            if (isCropMode) {
+                squarePreview.classList.add('draggable');
+                dragInfo.classList.add('show');
+            } else {
+                squarePreview.classList.remove('draggable', 'dragging');
+                dragInfo.classList.remove('show');
+            }
+        }
+        
+        function startDrag(e) {
+            if (conversionMode.value !== 'crop' || !currentImage) return;
+            
+            e.preventDefault();
+            isDragging = true;
+            squarePreview.classList.add('dragging');
+            
+            const rect = squarePreview.getBoundingClientRect();
+            const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+            const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+            
+            lastMousePos = {
+                x: clientX - rect.left,
+                y: clientY - rect.top
+            };
+        }
+        
+        function drag(e) {
+            if (!isDragging || conversionMode.value !== 'crop') return;
+            
+            e.preventDefault();
+            const rect = squarePreview.getBoundingClientRect();
+            const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+            const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+            
+            const currentMousePos = {
+                x: clientX - rect.left,
+                y: clientY - rect.top
+            };
+            
+            const deltaX = currentMousePos.x - lastMousePos.x;
+            const deltaY = currentMousePos.y - lastMousePos.y;
+            
+            // Scale the drag delta to match the actual canvas size
+            const previewRect = squarePreview.getBoundingClientRect();
+            const actualSize = parseInt(outputSize.value);
+            const scale = actualSize / previewRect.width;
+            
+            dragOffset.x += deltaX * scale;
+            dragOffset.y += deltaY * scale;
+            
+            // Limit drag range to keep some part of the image visible
+            const imgWidth = currentImage.width;
+            const imgHeight = currentImage.height;
+            const canvasSize = actualSize;
+            const imageScale = Math.max(canvasSize / imgWidth, canvasSize / imgHeight);
+            const scaledWidth = imgWidth * imageScale;
+            const scaledHeight = imgHeight * imageScale;
+            
+            const maxOffsetX = scaledWidth * 0.4; // Allow dragging up to 40% of scaled image size
+            const maxOffsetY = scaledHeight * 0.4;
+            
+            dragOffset.x = Math.max(-maxOffsetX, Math.min(maxOffsetX, dragOffset.x));
+            dragOffset.y = Math.max(-maxOffsetY, Math.min(maxOffsetY, dragOffset.y));
+            
+            lastMousePos = currentMousePos;
+            updateSquarePreview();
+        }
+        
+        function stopDrag() {
+            if (isDragging) {
+                isDragging = false;
+                squarePreview.classList.remove('dragging');
+            }
+        }
+        
+        function handleFile(file) {
+            if (!file.type.startsWith('image/')) {
+                alert('Please select an image file.');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    currentImage = img;
+                    dragOffset = { x: 0, y: 0 }; // Reset drag offset for new image
+                    originalPreview.src = e.target.result;
+                    controls.style.display = 'block';
+                    previewContainer.style.display = 'block';
+                    downloadBtn.style.display = 'block';
+                    updateDragInterface();
+                    updateSquarePreview();
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        function updateSquarePreview() {
+            if (!currentImage) return;
+            
+            const canvas = squarePreview;
+            const ctx = canvas.getContext('2d');
+            const size = parseInt(outputSize.value);
+            const mode = conversionMode.value;
+            
+            canvas.width = size;
+            canvas.height = size;
+            
+            // Clear canvas with transparent background
+            ctx.clearRect(0, 0, size, size);
+            
+            const imgWidth = currentImage.width;
+            const imgHeight = currentImage.height;
+            
+            if (mode === 'crop') {
+                // Crop mode: scale to fill square, crop excess, with drag offset
+                const scale = Math.max(size / imgWidth, size / imgHeight);
+                const scaledWidth = imgWidth * scale;
+                const scaledHeight = imgHeight * scale;
+                const baseX = (size - scaledWidth) / 2;
+                const baseY = (size - scaledHeight) / 2;
+                
+                // Apply drag offset
+                const x = baseX + dragOffset.x;
+                const y = baseY + dragOffset.y;
+                
+                ctx.drawImage(currentImage, x, y, scaledWidth, scaledHeight);
+            } else {
+                // Fit mode: scale to fit inside square with padding
+                const scale = Math.min(size / imgWidth, size / imgHeight);
+                const scaledWidth = imgWidth * scale;
+                const scaledHeight = imgHeight * scale;
+                const x = (size - scaledWidth) / 2;
+                const y = (size - scaledHeight) / 2;
+                
+                ctx.drawImage(currentImage, x, y, scaledWidth, scaledHeight);
+            }
+            
+            // Update preview canvas size for display
+            const previewSize = Math.min(200, size);
+            canvas.style.width = previewSize + 'px';
+            canvas.style.height = previewSize + 'px';
+        }
+        
+        downloadBtn.addEventListener('click', () => {
+            if (!currentImage) return;
+            
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const size = parseInt(outputSize.value);
+            const mode = conversionMode.value;
+            
+            canvas.width = size;
+            canvas.height = size;
+            
+            // Clear with transparent background
+            ctx.clearRect(0, 0, size, size);
+            
+            const imgWidth = currentImage.width;
+            const imgHeight = currentImage.height;
+            
+            if (mode === 'crop') {
+                // Crop mode with drag offset
+                const scale = Math.max(size / imgWidth, size / imgHeight);
+                const scaledWidth = imgWidth * scale;
+                const scaledHeight = imgHeight * scale;
+                const baseX = (size - scaledWidth) / 2;
+                const baseY = (size - scaledHeight) / 2;
+                
+                // Apply drag offset
+                const x = baseX + dragOffset.x;
+                const y = baseY + dragOffset.y;
+                
+                ctx.drawImage(currentImage, x, y, scaledWidth, scaledHeight);
+            } else {
+                // Fit mode
+                const scale = Math.min(size / imgWidth, size / imgHeight);
+                const scaledWidth = imgWidth * scale;
+                const scaledHeight = imgHeight * scale;
+                const x = (size - scaledWidth) / 2;
+                const y = (size - scaledHeight) / 2;
+                
+                ctx.drawImage(currentImage, x, y, scaledWidth, scaledHeight);
+            }
+            
+            // Convert to PNG and download
+            canvas.toBlob((blob) => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `square_image_${size}x${size}.png`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 'image/png', 1.0);
+        });
+    </script>
+</body>
+</html>
