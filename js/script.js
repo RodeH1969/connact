@@ -1,72 +1,42 @@
 document.addEventListener("DOMContentLoaded", () => {
-    // Toggle Admin Panel
-    const adminToggle = document.querySelector(".admin-toggle");
-    const adminPanel = document.querySelector(".admin-panel");
-    const adminClose = document.querySelector(".admin-close");
+    // No admin panel logic since button/panel are commented out
+    // Add your custom grid or game logic here if needed
+    const grid = document.querySelector(".game-grid");
+    if (grid) {
+        // Optional: Dynamic tile loading (if your original used JS)
+        const tiles = [
+            { src: "actors/Melissa_McCarthy.png", alt: "Melissa McCarthy" },
+            { src: "movies/bridesmaids.png", alt: "Bridesmaids" },
+            { src: "actors/rebel_wilson.png", alt: "Rebel Wilson" },
+            { src: "movies/pitchperfect.png", alt: "Pitch Perfect" },
+            { src: "actors/anna_kendrick.png", alt: "Anna Kendrick" },
+            { src: "movies/upintheair.png", alt: "Up in the Air" },
+            { src: "actors/vera_farmiga.png", alt: "Vera Farmiga" },
+            { src: "movies/couplesretreat.png", alt: "Couples Retreat" },
+            { src: "actors/kristen_bell.png", alt: "Kristen Bell" },
+            { src: "movies/badmoms.png", alt: "Bad Moms" },
+            { src: "actors/mila_kunis.png", alt: "Mila Kunis" },
+            { src: "movies/ted.png", alt: "Ted" },
+            { src: "actors/mark_wahlberg.png", alt: "Mark Wahlberg" },
+            { src: "movies/thedeparted.png", alt: "The Departed" },
+            { src: "actors/jason_bateman.png", alt: "Jason Bateman" },
+            { src: "movies/identitythief.png", alt: "Identity Thief" },
+            { src: "actors/Melissa_McCarthy.png", alt: "Melissa McCarthy" }
+        ];
+        grid.innerHTML = ""; // Clear static tiles if present
+        tiles.forEach(tile => {
+            const div = document.createElement("div");
+            div.className = "tile";
+            div.innerHTML = `<img src="${tile.src}" alt="${tile.alt}">`;
+            grid.appendChild(div);
+        });
+    }
 
-    adminToggle.addEventListener("click", () => {
-        adminPanel.style.display = "block";
-    });
-
-    adminClose.addEventListener("click", () => {
-        adminPanel.style.display = "none";
-    });
-
-    // File Upload Preview (client-side only)
-    const fileInput = document.getElementById("fileInput");
-    fileInput.addEventListener("change", (e) => {
-        const files = e.target.files;
-        for (let file of files) {
-            if (file.type === "image/png") {
-                console.log(`Uploaded: ${file.name}`);
-                // Backend needed for actual upload
-            }
-        }
-    });
-
-    // Sequence Builder (placeholder)
-    const addStepBtn = document.getElementById("addStep");
-    const clearSequenceBtn = document.getElementById("clearSequence");
-    const sequenceBuilder = document.getElementById("sequenceBuilder");
-
-    addStepBtn.addEventListener("click", () => {
-        const step = document.createElement("div");
-        step.textContent = "New Step (configure actor/movie)";
-        sequenceBuilder.appendChild(step);
-        // Add logic for selecting actor/movie
-    });
-
-    clearSequenceBtn.addEventListener("click", () => {
-        sequenceBuilder.innerHTML = "";
-    });
-
-    // Save Game (placeholder)
-    document.getElementById("saveGame").addEventListener("click", () => {
-        console.log("Saving game configuration...");
-        // Backend needed for saving
-    });
-
-    // Export Configuration (placeholder)
-    document.getElementById("exportConfig").addEventListener("click", () => {
-        console.log("Exporting configuration...");
-        // Backend needed for export
-    });
-
-    // Anchor Actor Selection
-    document.getElementById("anchorActor").addEventListener("change", (e) => {
-        console.log(`Anchor actor set to: ${e.target.value}`);
-        // Update grid with anchor actor
-    });
-
-    // Logo Preview
-    document.getElementById("logoFile").addEventListener("change", (e) => {
-        const file = e.target.files[0];
-        if (file && file.type === "image/png") {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                document.querySelector(".logo-preview").src = event.target.result;
-            };
-            reader.readAsDataURL(file);
+    // Fallback for image loading
+    document.querySelectorAll(".tile img").forEach(img => {
+        if (!img.complete || img.naturalWidth === 0) {
+            console.log(`Image not loaded: ${img.src}`);
+            img.src = "connact_logo.png"; // Fallback image
         }
     });
 });
