@@ -35,11 +35,12 @@ document.addEventListener("DOMContentLoaded", () => {
         { src: "actors/Melissa_McCarthy.png", alt: "Melissa McCarthy" }
     ];
 
+    // Populate grid immediately
     initialTiles.forEach(tile => {
         const div = document.createElement("div");
         div.className = "tile";
         div.setAttribute("draggable", "true");
-        div.innerHTML = `<img src="${tile.src}" alt="${tile.alt}" loading="lazy">`;
+        div.innerHTML = `<img src="${tile.src}" alt="${tile.alt}">`; // Removed loading="lazy"
         grid.appendChild(div);
     });
 
