@@ -4,8 +4,282 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Connact Game</title>
-    <link rel="stylesheet" href="css/styles.css">
-    <script src="js/script.js" defer></script>
+    <style>
+        /* Reset and base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            background-color: #f0f0f0;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            font-size: 2em;
+            color: #2c3e50;
+        }
+
+        header p {
+            font-size: 1.3em;
+            color: #7f8c8d;
+        }
+
+        /* Game Grid */
+        .game-grid {
+            display: flex;
+            flex-wrap: nowrap;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 15px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow-x: auto;
+            min-height: 120px;
+        }
+
+        .game-grid[droppable="true"] {
+            min-height: 120px;
+        }
+
+        .game-grid .tile {
+            flex: 0 0 auto;
+            width: 100px;
+            height: 100px;
+            overflow: hidden;
+            border: 2px solid #ecf0f1;
+            border-radius: 15px;
+            background-color: #fff;
+            transition: transform 0.2s;
+            cursor: move;
+        }
+
+        .game-grid .tile:hover {
+            transform: scale(1.05);
+        }
+
+        .game-grid .tile.dragover {
+            border-color: #3498db;
+            background-color: #e8f4f8;
+        }
+
+        .game-grid .tile img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* Mobile Grid */
+        @media screen and (max-width: 600px) {
+            .game-grid {
+                gap: 5px;
+                padding: 10px;
+            }
+
+            .game-grid .tile {
+                width: calc((100vw - 90px) / 17);
+                height: calc((100vw - 90px) / 17);
+                min-width: 35px;
+                min-height: 35px;
+                border-width: 1px;
+            }
+
+            .game-grid .tile:hover {
+                transform: none;
+            }
+        }
+
+        /* Very small screens */
+        @media screen and (max-width: 360px) {
+            .game-grid {
+                flex-wrap: wrap;
+                justify-content: space-between;
+            }
+
+            .game-grid .tile {
+                width: calc((100vw - 40px) / 9);
+                height: calc((100vw - 40px) / 9);
+                margin-bottom: 5px;
+            }
+        }
+
+        /* Admin Panel */
+        .admin-toggle {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.1em;
+        }
+
+        .admin-panel {
+            display: none;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+
+        .admin-panel h2 {
+            font-size: 1.7em;
+            margin-bottom: 15px;
+        }
+
+        .admin-panel h3 {
+            font-size: 1.3em;
+            margin: 15px 0 10px;
+        }
+
+        .upload-area {
+            border: 2px dashed #ccc;
+            padding: 20px;
+            text-align: center;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            min-height: 150px;
+        }
+
+        .upload-area[droppable="true"] {
+            background-color: #f1f1f1;
+        }
+
+        .upload-area.dragover {
+            background-color: #e0f7fa;
+            border-color: #3498db;
+        }
+
+        .upload-area p {
+            margin: 5px 0;
+        }
+
+        #fileInput {
+            margin-top: 10px;
+        }
+
+        #anchorActor,
+        #smsNumber,
+        #logoFile {
+            width: 100%;
+            padding: 8px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        #sequenceBuilder {
+            margin: 10px 0;
+            min-height: 100px;
+        }
+
+        .logo-preview {
+            max-width: 120px;
+            margin-top: 10px;
+        }
+
+        .admin-panel button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+        #saveGame {
+            background-color: #28a745;
+            color: #fff;
+        }
+
+        #exportConfig {
+            background-color: #17a2b8;
+            color: #fff;
+        }
+
+        #addStep {
+            background-color: #007bff;
+            color: #fff;
+        }
+
+        #clearSequence {
+            background-color: #dc3545;
+            color: #fff;
+        }
+
+        .admin-close {
+            background-color: #6c757d;
+            color: #fff;
+        }
+
+        /* Mobile Admin Panel */
+        @media screen and (max-width: 600px) {
+            .container {
+                padding: 10px;
+            }
+
+            header h1 {
+                font-size: 1.5em;
+            }
+
+            header p {
+                font-size: 1.1em;
+            }
+
+            .game-grid {
+                padding: 8px;
+            }
+
+            .admin-panel {
+                padding: 15px;
+            }
+
+            .admin-panel h2 {
+                font-size: 1.4em;
+            }
+
+            .admin-panel h3 {
+                font-size: 1.1em;
+            }
+
+            .upload-area {
+                padding: 15px;
+                min-height: 120px;
+            }
+
+            .admin-panel button {
+                width: 100%;
+                margin: 5px 0;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -78,5 +352,181 @@
             <button class="admin-close">✖ Close</button>
         </div>
     </div>
+
+    <script>
+        // Ensure DOM is fully loaded
+        document.addEventListener("DOMContentLoaded", () => {
+            const grid = document.querySelector(".game-grid");
+            const uploadArea = document.querySelector(".upload-area");
+            const adminToggle = document.querySelector(".admin-toggle");
+            const adminPanel = document.querySelector(".admin-panel");
+            const adminClose = document.querySelector(".admin-close");
+
+            // Toggle Admin Panel
+            adminToggle.addEventListener("click", () => {
+                adminPanel.style.display = "block";
+            });
+
+            adminClose.addEventListener("click", () => {
+                adminPanel.style.display = "none";
+            });
+
+            // Initialize Grid with Existing Tiles
+            const initialTiles = [
+                { src: "actors/Melissa_McCarthy.png", alt: "Melissa McCarthy" },
+                { src: "movies/bridesmaids.png", alt: "Bridesmaids" },
+                { src: "actors/rebel_wilson.png", alt: "Rebel Wilson" },
+                { src: "movies/pitchperfect.png", alt: "Pitch Perfect" },
+                { src: "actors/anna_kendrick.png", alt: "Anna Kendrick" },
+                { src: "movies/upintheair.png", alt: "Up in the Air" },
+                { src: "actors/vera_farmiga.png", alt: "Vera Farmiga" },
+                { src: "movies/couplesretreat.png", alt: "Couples Retreat" },
+                { src: "actors/kristen_bell.png", alt: "Kristen Bell" },
+                { src: "movies/badmoms.png", alt: "Bad Moms" },
+                { src: "actors/mila_kunis.png", alt: "Mila Kunis" },
+                { src: "movies/ted.png", alt: "Ted" },
+                { src: "actors/mark_wahlberg.png", alt: "Mark Wahlberg" },
+                { src: "movies/thedeparted.png", alt: "The Departed" },
+                { src: "actors/jason_bateman.png", alt: "Jason Bateman" },
+                { src: "movies/identitythief.png", alt: "Identity Thief" },
+                { src: "actors/Melissa_McCarthy.png", alt: "Melissa McCarthy" }
+            ];
+
+            initialTiles.forEach(tile => {
+                const div = document.createElement("div");
+                div.className = "tile";
+                div.setAttribute("draggable", "true");
+                div.innerHTML = `<img src="${tile.src}" alt="${tile.alt}">`;
+                grid.appendChild(div);
+            });
+
+            // Drag and Drop for Tiles
+            let draggedTile = null;
+
+            grid.addEventListener("dragstart", (e) => {
+                if (e.target.classList.contains("tile")) {
+                    draggedTile = e.target;
+                    e.target.classList.add("dragging");
+                    e.dataTransfer.setData("text/plain", e.target.innerHTML);
+                }
+            });
+
+            grid.addEventListener("dragend", (e) => {
+                if (e.target.classList.contains("tile")) {
+                    e.target.classList.remove("dragging");
+                    draggedTile = null;
+                }
+            });
+
+            grid.addEventListener("dragover", (e) => {
+                e.preventDefault();
+            });
+
+            grid.addEventListener("drop", (e) => {
+                e.preventDefault();
+                if (draggedTile && e.target.classList.contains("tile")) {
+                    const rect = e.target.getBoundingClientRect();
+                    const dropZone = e.clientX - rect.left < rect.width / 2 ? "before" : "after";
+                    if (dropZone === "before") {
+                        grid.insertBefore(draggedTile, e.target);
+                    } else {
+                        grid.insertBefore(draggedTile, e.target.nextSibling);
+                    }
+                }
+            });
+
+            // File Upload and Drag to Grid
+            uploadArea.addEventListener("dragover", (e) => {
+                e.preventDefault();
+                uploadArea.classList.add("dragover");
+            });
+
+            uploadArea.addEventListener("dragleave", () => {
+                uploadArea.classList.remove("dragover");
+            });
+
+            uploadArea.addEventListener("drop", (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove("dragover");
+                const files = e.dataTransfer.files;
+                handleFiles(files);
+            });
+
+            const fileInput = document.getElementById("fileInput");
+            fileInput.addEventListener("change", (e) => {
+                handleFiles(e.target.files);
+            });
+
+            function handleFiles(files) {
+                for (let file of files) {
+                    if (file.type === "image/png") {
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                            const img = document.createElement("img");
+                            img.src = event.target.result;
+                            img.alt = file.name;
+                            const tile = document.createElement("div");
+                            tile.className = "tile";
+                            tile.setAttribute("draggable", "true");
+                            tile.appendChild(img);
+                            grid.appendChild(tile);
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                }
+            }
+
+            // Image loading fallback
+            grid.querySelectorAll("img").forEach(img => {
+                img.onerror = () => {
+                    console.log(`Image failed to load: ${img.src}`);
+                    img.src = "connact_logo.png";
+                    img.alt = "Fallback Image";
+                };
+            });
+
+            // Anchor Actor Selection (placeholder)
+            document.getElementById("anchorActor").addEventListener("change", (e) => {
+                console.log(`Anchor actor set to: ${e.target.value}`);
+                // Update grid positions 1 and 17
+            });
+
+            // Sequence Builder (placeholder)
+            const addStepBtn = document.getElementById("addStep");
+            const clearSequenceBtn = document.getElementById("clearSequence");
+            const sequenceBuilder = document.getElementById("sequenceBuilder");
+
+            addStepBtn.addEventListener("click", () => {
+                const step = document.createElement("div");
+                step.textContent = "New Step";
+                sequenceBuilder.appendChild(step);
+            });
+
+            clearSequenceBtn.addEventListener("click", () => {
+                sequenceBuilder.innerHTML = "";
+            });
+
+            // Save and Export (placeholder)
+            document.getElementById("saveGame").addEventListener("click", () => {
+                console.log("Saving game configuration...");
+            });
+
+            document.getElementById("exportConfig").addEventListener("click", () => {
+                console.log("Exporting configuration...");
+            });
+
+            // Logo Preview
+            document.getElementById("logoFile").addEventListener("change", (e) => {
+                const file = e.target.files[0];
+                if (file && file.type === "image/png") {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        document.querySelector(".logo-preview").src = event.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        });
+    </script>
 </body>
 </html>
