@@ -591,6 +591,7 @@
         var sequencePositions = [1, 2, 3, 4, 8, 7, 6, 5, 9, 10, 11, 12, 16, 15, 14, 13]; // Zigzag order
         var currentPosition = 1;
         var draggedTile = null;
+        var pngTiles = [];
 
         // Initialize game
         function initializeGame() {
@@ -598,6 +599,7 @@
             createInitialSequence();
             createPngGrid();
             attachEventListeners();
+            console.log('Game initialized');
         }
 
         function generateCorrectAnswers() {
@@ -606,6 +608,7 @@
                 var pos = sequencePositions[i + 1]; // Start from position 2
                 correctAnswers['dropTile' + pos] = gameConfig.sequence[i].file;
             }
+            console.log('Correct answers generated:', correctAnswers);
         }
 
         function createInitialSequence() {
@@ -638,6 +641,7 @@
 
             // Center the initial two tiles
             sequenceGrid.style.justifyContent = 'center';
+            console.log('Initial sequence created');
         }
 
         function createPngGrid() {
@@ -645,13 +649,20 @@
             pngGrid.innerHTML = '';
 
             var allImages = gameConfig.sequence.slice();
+            // Shuffle array
+            for (var i = allImages.length - 1; i > 0; i--) {
+                var j = Math.floor(Math.random() * (i + 1));
+                [allImages[i], allImages[j]] = [allImages[j], allImages[i]];
+            }
+
             for (var i = 0; i < allImages.length; i++) {
                 var item = allImages[i];
                 var tile = document.createElement('div');
                 tile.className = 'png-tile';
-                tile.draggable = true;
+                tile.setAttribute('draggable', 'true'); // Explicitly set draggable
                 tile.setAttribute('data-src', item.file);
                 tile.setAttribute('data-name', item.name);
+                pngTiles.push(tile);
 
                 var img = document.createElement('img');
                 img.src = item.file;
@@ -663,14 +674,15 @@
                 tile.appendChild(img);
                 pngGrid.appendChild(tile);
             }
+            console.log('PNG grid created with', pngTiles.length, 'tiles');
         }
 
         function attachEventListeners() {
             var dropZones = document.querySelectorAll('.drop-zone');
             var imageElements = document.querySelectorAll('.png-tile');
 
-            for (var i = 0; i < imageElements.length; i++) {
-                imageElements[i].addEventListener('dragstart', function(e) {
+            imageElements.forEach(function(tile) {
+                tile.addEventListener('dragstart', function(e) {
                     if (gameWon || revealInProgress) return;
                     
                     draggedTile = this;
@@ -679,32 +691,38 @@
                     e.dataTransfer.setData('text/plain', imgSrc);
                     e.dataTransfer.setData('text/name', imgName);
                     e.dataTransfer.effectAllowed = 'move';
+                    this.classList.add('dragging');
                     document.getElementById('enterButton').style.display = 'block';
+                    console.log('Drag started on', imgName);
                 });
 
-                imageElements[i].addEventListener('dragend', function(e) {
+                tile.addEventListener('dragend', function(e) {
+                    this.classList.remove('dragging');
                     if (!document.querySelector('.drop-zone.drag-over')) {
                         document.getElementById('enterButton').style.display = 'none';
                     }
+                    console.log('Drag ended');
                 });
-            }
+            });
 
-            for (var i = 0; i < dropZones.length; i++) {
-                dropZones[i].addEventListener('dragover', function(e) {
+            dropZones.forEach(function(dropZone) {
+                dropZone.addEventListener('dragover', function(e) {
                     if (gameWon || revealInProgress) return;
                     e.preventDefault();
                     e.dataTransfer.dropEffect = 'move';
                     this.classList.add('drag-over');
+                    console.log('Drag over', dropZone.id);
                 });
                 
-                dropZones[i].addEventListener('dragleave', function(e) {
+                dropZone.addEventListener('dragleave', function(e) {
                     if (!this.contains(e.relatedTarget)) {
                         this.classList.remove('drag-over');
                         document.getElementById('enterButton').style.display = 'none';
                     }
+                    console.log('Drag leave', dropZone.id);
                 });
                 
-                dropZones[i].addEventListener('drop', function(e) {
+                dropZone.addEventListener('drop', function(e) {
                     if (gameWon || revealInProgress) return;
                     
                     e.preventDefault();
@@ -715,9 +733,10 @@
                     if (imageSrc && !this.querySelector('img')) {
                         draggedTile.style.opacity = '0.5'; // Visual feedback
                         document.getElementById('enterButton').style.display = 'block';
+                        console.log('Drop on', this.id, 'with', imageName);
                     }
                 });
-            }
+            });
         }
 
         function submitMove() {
@@ -728,11 +747,15 @@
             var imageName = draggedTile.getAttribute('data-name');
             var correctImage = correctAnswers[dropZone.id];
 
+            console.log('Submit move:', dropZone.id, imageSrc, correctImage);
             if (imageSrc === correctImage) {
                 placeImageInTile(dropZone, imageSrc, imageName);
                 draggedTile.parentNode.removeChild(draggedTile);
+                draggedTile = null;
                 addNextTile();
                 checkIfAllTilesFilled();
+                document.getElementById('enterButton').style.display = 'none';
+                console.log('Correct move, added tile', dropZone.id);
             } else {
                 dropZone.classList.remove('drag-over');
                 draggedTile.style.opacity = '1';
@@ -741,8 +764,9 @@
                 document.getElementById('enterButton').style.display = 'none';
                 if (currentAttempt < maxAttempts) {
                     currentAttempt++;
-                    document.getElementById('attemptCounter').textContent = 'Attempt ' + currentAttempt + ' of ' + maxAttempts;
+                    document.getElementById('attemptCounter').textContent = 'Attempt ' + currentAttempt + ' of ' + maxAttempts';
                 }
+                console.log('Incorrect move, attempt', currentAttempt);
             }
         }
 
@@ -773,6 +797,7 @@
             
             dropZone.appendChild(img);
             dropZone.appendChild(clearButton);
+            console.log('Image placed in', dropZone.id);
         }
 
         function clearTile(tile) {
@@ -791,6 +816,7 @@
             tile.innerHTML = '<span style="color: ' + color + '; font-weight: bold; font-size: 12px;">' + label + '</span>';
             placedImages.delete(tile.id);
             checkIfAllTilesFilled();
+            console.log('Tile cleared', tile.id);
         }
 
         function addNextTile() {
@@ -809,10 +835,8 @@
             newDropZone.innerHTML = '<span style="color: ' + color + '; font-weight: bold; font-size: 12px;">' + label + '</span>';
             sequenceGrid.appendChild(newDropZone);
 
-            // Adjust layout to move left as tiles are added
-            var tiles = sequenceGrid.children;
-            var totalWidth = (tiles.length - 1) * 105; // 100px tile + 5px margin
-            sequenceGrid.style.transform = 'translateX(' + (210 - totalWidth / 2) + 'px)'; // Center initially, shift left
+            // No shifting, just add as per zigzag
+            console.log('Added next tile at position', sequencePositions[currentPosition - 1]);
         }
 
         function checkIfAllTilesFilled() {
@@ -826,6 +850,7 @@
             } else {
                 revealButton.textContent = "Place actors & movies to connect the sequence";
             }
+            console.log('Checked tiles:', filledTiles, '/', totalTiles);
         }
 
         function revealAnswers() {
@@ -895,20 +920,23 @@
                     showAttemptMessage(correctCount, totalTiles);
                     prepareNextAttempt();
                 }
+                console.log('Reveal completed, correct:', correctCount);
             }, 2000);
         }
 
         function prepareNextAttempt() {
             currentAttempt++;
-            document.getElementById('attemptCounter').textContent = 'Attempt ' + currentAttempt + ' of ' + maxAttempts;
+            document.getElementById('attemptCounter').textContent = 'Attempt ' + currentAttempt + ' of ' + maxAttempts';
             revealInProgress = false;
             checkIfAllTilesFilled();
+            console.log('Prepared next attempt:', currentAttempt);
         }
         
         function showAttemptMessage(correct, total) {
             var gameMessage = document.getElementById('gameMessage');
             gameMessage.innerHTML = 'It was wrong, you\'ve ' + (maxAttempts - currentAttempt) + ' more attempts to go, good luck!';
             gameMessage.style.display = 'block';
+            console.log('Attempt message shown');
         }
         
         function showGameOverMessage() {
@@ -919,6 +947,7 @@
             gameMessage.style.borderColor = '#f5c6cb';
             gameMessage.style.color = '#721c24';
             document.getElementById('revealButton').style.display = 'none';
+            console.log('Game over message shown');
         }
         
         function showWinMessage() {
@@ -937,6 +966,7 @@
             
             document.getElementById('attemptCounter').textContent = 'Completed in ' + currentAttempt + (currentAttempt === 1 ? ' attempt!' : ' attempts!');
             document.getElementById('revealButton').style.display = 'none';
+            console.log('Win message shown');
         }
         
         function sendSMS() {
@@ -950,16 +980,19 @@
             
             var smsURL = 'sms:' + gameConfig.smsNumber + '?body=' + encodeURIComponent(message);
             window.open(smsURL, '_blank');
+            console.log('SMS sent');
         }
 
         // ADMIN FUNCTIONS
         function openAdmin() {
             document.getElementById('adminPanel').style.display = 'block';
             loadAdminData();
+            console.log('Admin panel opened');
         }
 
         function closeAdmin() {
             document.getElementById('adminPanel').style.display = 'none';
+            console.log('Admin panel closed');
         }
 
         function loadAdminData() {
@@ -967,6 +1000,7 @@
             loadSequenceBuilder();
             document.getElementById('smsNumber').value = gameConfig.smsNumber;
             document.getElementById('logoFile').value = gameConfig.logoFile;
+            console.log('Admin data loaded');
         }
 
         function populateAnchorSelect() {
@@ -987,6 +1021,7 @@
                     anchorSelect.appendChild(option);
                 }
             });
+            console.log('Anchor select populated');
         }
 
         function loadSequenceBuilder() {
@@ -996,12 +1031,14 @@
             for (var i = 0; i < gameConfig.sequence.length; i++) {
                 addSequenceStepWithData(gameConfig.sequence[i], i + 2);
             }
+            console.log('Sequence builder loaded');
         }
 
         function addSequenceStep() {
             var container = document.getElementById('sequenceSteps');
             var stepNumber = container.children.length + 2;
             addSequenceStepWithData(null, stepNumber);
+            console.log('Added sequence step', stepNumber);
         }
 
         function addSequenceStepWithData(data, stepNumber) {
@@ -1075,16 +1112,19 @@
             
             var stepNumber = index + 2;
             gameConfig.sequence[index].type = stepNumber % 2 === 0 ? 'movie' : 'actor';
+            console.log('Updated sequence step', index, field, value);
         }
 
         function removeSequenceStep(index) {
             gameConfig.sequence.splice(index, 1);
             loadSequenceBuilder();
+            console.log('Removed sequence step', index);
         }
 
         function clearSequence() {
             gameConfig.sequence = [];
             loadSequenceBuilder();
+            console.log('Sequence cleared');
         }
 
         function saveGameConfig() {
@@ -1107,6 +1147,7 @@
             
             alert('Game updated successfully!');
             closeAdmin();
+            console.log('Game config saved');
         }
 
         function exportGame() {
@@ -1125,6 +1166,7 @@
             URL.revokeObjectURL(url);
             
             alert('Configuration exported successfully!');
+            console.log('Game config exported');
         }
 
         function setupFileUpload() {
@@ -1153,6 +1195,7 @@
             fileInput.addEventListener('change', function(e) {
                 handleFiles(e.target.files);
             });
+            console.log('File upload setup');
         }
 
         function handleFiles(files) {
@@ -1183,6 +1226,7 @@
                     reader.readAsDataURL(file);
                 }
             }
+            console.log('Files handled:', files.length);
         }
 
         function displayUploadedFiles() {
@@ -1233,12 +1277,14 @@
                 
                 filesList.appendChild(fileItem);
             });
+            console.log('Uploaded files displayed');
         }
 
         function removeUploadedFile(fileName) {
             uploadedFiles.delete(fileName);
             displayUploadedFiles();
             populateAnchorSelect();
+            console.log('Removed uploaded file', fileName);
         }
 
         // Initialize everything
