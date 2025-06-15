@@ -22,7 +22,7 @@
             height: auto;
         }
 
-        .tile, .drop-zone, .movie-actor-tile {
+        .tile, .drop-zone {
             width: 100px;
             height: 100px;
             display: flex;
@@ -38,12 +38,12 @@
             position: relative;
         }
 
-        .tile:hover, .movie-actor-tile:hover {
+        .tile:hover {
             transform: scale(1.02);
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
-        .tile:active, .movie-actor-tile:active {
+        .tile:active {
             cursor: grabbing;
         }
 
@@ -62,7 +62,7 @@
             border-style: dashed;
         }
 
-        .movie-actor-tile img, .tile img {
+        .tile img {
             width: 92px;
             height: 92px;
             object-fit: cover;
@@ -92,11 +92,12 @@
             color: #333;
         }
 
-        .snake-container {
-            display: flex;
-            flex-wrap: nowrap;
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 100px);
+            grid-template-rows: repeat(4, 100px);
             gap: 5px;
-            max-width: 100%;
+            max-width: 420px;
             margin: 0 auto;
             justify-content: center;
             align-items: center;
@@ -104,44 +105,26 @@
 
         /* Mobile Grid */
         @media screen and (max-width: 600px) {
-            .snake-container {
-                gap: 3px;
+            .game-grid {
+                grid-template-columns: repeat(4, calc((100vw - 20px) / 4));
+                grid-template-rows: repeat(4, calc((100vw - 20px) / 4));
+                gap: 2px;
                 padding: 5px;
             }
 
-            .tile, .drop-zone, .movie-actor-tile {
-                width: calc((100vw - 78px) / 17); /* Fit 17 tiles */
-                height: calc((100vw - 78px) / 17);
+            .tile, .drop-zone {
+                width: calc((100vw - 20px) / 4);
+                height: calc((100vw - 20px) / 4);
                 min-width: 35px;
                 min-height: 35px;
-                margin: 2px;
+                margin: 1px;
                 border-width: 2px;
             }
 
-            .movie-actor-tile img, .tile img {
+            .tile img {
                 width: calc(100% - 8px);
                 height: calc(100% - 8px);
             }
-        }
-
-        /* Very small screens */
-        @media screen and (max-width: 360px) {
-            .snake-container {
-                flex-wrap: wrap;
-                justify-content: space-between;
-            }
-
-            .tile, .drop-zone, .movie-actor-tile {
-                width: calc((100vw - 40px) / 9);
-                height: calc((100vw - 40px) / 9);
-                margin-bottom: 3px;
-            }
-        }
-
-        .movie-actor-tile {
-            display: inline-block;
-            text-align: center;
-            vertical-align: top;
         }
 
         .game-info {
@@ -206,12 +189,6 @@
 
         .sms-button:hover {
             background: #218838;
-        }
-
-        .images-container {
-            max-width: 880px;
-            margin: 0 auto;
-            text-align: center;
         }
 
         .admin-panel {
@@ -470,14 +447,8 @@
     </div>
 
     <div class="tiles-section">
-        <div class="snake-container" id="gameGrid">
-            <!-- Game grid will be populated by JavaScript -->
-        </div>
-    </div>
-
-    <div>
-        <div class="images-container" id="imagesContainer">
-            <!-- Images will be populated by JavaScript -->
+        <div class="game-grid" id="gameGrid">
+            <!-- Grid will be populated by JavaScript with 1 Jason Bateman and 15 draggable sequence tiles -->
         </div>
     </div>
 
@@ -505,7 +476,7 @@
 
             <div class="admin-section">
                 <h3>🎭 Choose Anchor Actor</h3>
-                <p>Select which actor appears in positions 1 and 17:</p>
+                <p>Select which actor appears in position 1:</p>
                 <select id="anchorSelect" class="admin-input">
                     <option value="">Choose anchor actor...</option>
                 </select>
@@ -579,7 +550,6 @@
         function initializeGame() {
             generateCorrectAnswers();
             createGameGrid();
-            createImageContainer();
             attachEventListeners();
             checkIfAllTilesFilled();
         }
@@ -596,86 +566,61 @@
             var gameGrid = document.getElementById('gameGrid');
             gameGrid.innerHTML = '';
 
-            var anchorTile1 = createAnchorTile();
-            gameGrid.appendChild(anchorTile1);
-
-            for (var i = 2; i <= 16; i++) {
-                var dropZone = createDropZone(i);
-                gameGrid.appendChild(dropZone);
-            }
-
-            var anchorTile17 = createAnchorTile();
-            gameGrid.appendChild(anchorTile17);
-        }
-
-        function createAnchorTile() {
-            var tile = document.createElement('div');
-            tile.className = 'tile';
-            tile.draggable = true;
-            tile.setAttribute('data-src', gameConfig.anchor.file);
-            tile.setAttribute('data-name', gameConfig.anchor.name);
+            // Place Jason Bateman at position 1
+            var anchorTile = document.createElement('div');
+            anchorTile.className = 'tile';
+            anchorTile.draggable = false; // Anchor not draggable
+            anchorTile.setAttribute('data-src', gameConfig.anchor.file);
+            anchorTile.setAttribute('data-name', gameConfig.anchor.name);
 
             var img = document.createElement('img');
             img.src = gameConfig.anchor.file;
             img.alt = gameConfig.anchor.name;
             img.onerror = function() {
-                tile.innerHTML = '<div style="padding:10px; text-align:center; color:#999; font-size:10px;">' + gameConfig.anchor.name + '<br><small>(Image not found)</small></div>';
+                anchorTile.innerHTML = '<div style="padding:10px; text-align:center; color:#999; font-size:10px;">' + gameConfig.anchor.name + '<br><small>(Image not found)</small></div>';
             };
 
-            tile.appendChild(img);
-            return tile;
-        }
+            anchorTile.appendChild(img);
+            gameGrid.appendChild(anchorTile);
 
-        function createDropZone(position) {
-            var dropZone = document.createElement('div');
-            dropZone.className = 'drop-zone';
-            dropZone.id = 'dropTile' + position;
-
-            var isMovieTile = position % 2 === 0;
-            var color = isMovieTile ? '#007bff' : '#28a745';
-            var label = isMovieTile ? 'Movie' : 'Actor';
-
-            dropZone.innerHTML = '<span style="color: ' + color + '; font-weight: bold; font-size: 12px;">' + label + '</span>';
-            return dropZone;
-        }
-
-        function createImageContainer() {
-            var container = document.getElementById('imagesContainer');
-            container.innerHTML = '';
-
+            // Populate remaining 15 tiles with sequence items as draggable tiles
             var allImages = gameConfig.sequence.slice();
-            
-            // Shuffle array
-            for (var i = allImages.length - 1; i > 0; i--) {
-                var j = Math.floor(Math.random() * (i + 1));
-                var temp = allImages[i];
-                allImages[i] = allImages[j];
-                allImages[j] = temp;
-            }
+            for (var i = 0; i < 15; i++) {
+                if (i < allImages.length) {
+                    var item = allImages[i];
+                    var tile = document.createElement('div');
+                    tile.className = 'tile';
+                    tile.draggable = true;
+                    tile.setAttribute('data-src', item.file);
+                    tile.setAttribute('data-name', item.name);
 
-            for (var i = 0; i < allImages.length; i++) {
-                var item = allImages[i];
-                var tile = document.createElement('div');
-                tile.className = 'movie-actor-tile';
-                tile.draggable = true;
-                tile.setAttribute('data-src', item.file);
-                tile.setAttribute('data-name', item.name);
+                    var img = document.createElement('img');
+                    img.src = item.file;
+                    img.alt = item.name;
+                    img.onerror = function() {
+                        this.parentNode.innerHTML = '<div style="padding:10px; text-align:center; color:#999; font-size:10px;">' + this.alt + '<br><small>(Image not found)</small></div>';
+                    };
 
-                var img = document.createElement('img');
-                img.src = item.file;
-                img.alt = item.name;
-                img.onerror = function() {
-                    this.parentNode.innerHTML = '<div style="padding:10px; text-align:center; color:#999; font-size:10px;">' + this.alt + '<br><small>(Image not found)</small></div>';
-                };
+                    tile.appendChild(img);
+                    gameGrid.appendChild(tile);
+                } else {
+                    var dropZone = document.createElement('div');
+                    dropZone.className = 'drop-zone';
+                    dropZone.id = 'dropTile' + (i + 2);
 
-                tile.appendChild(img);
-                container.appendChild(tile);
+                    var isMovieTile = (i + 1) % 2 === 0;
+                    var color = isMovieTile ? '#007bff' : '#28a745';
+                    var label = isMovieTile ? 'Movie' : 'Actor';
+
+                    dropZone.innerHTML = '<span style="color: ' + color + '; font-weight: bold; font-size: 12px;">' + label + '</span>';
+                    gameGrid.appendChild(dropZone);
+                }
             }
         }
 
         function attachEventListeners() {
             var dropZones = document.querySelectorAll('.drop-zone');
-            var imageElements = document.querySelectorAll('.movie-actor-tile, .tile');
+            var imageElements = document.querySelectorAll('.tile[draggable="true"]');
 
             for (var i = 0; i < imageElements.length; i++) {
                 imageElements[i].addEventListener('dragstart', function(e) {
@@ -685,7 +630,7 @@
                     var imgName = this.getAttribute('data-name');
                     e.dataTransfer.setData('text/plain', imgSrc);
                     e.dataTransfer.setData('text/name', imgName);
-                    e.dataTransfer.effectAllowed = 'copy';
+                    e.dataTransfer.effectAllowed = 'move';
                 });
             }
 
@@ -693,7 +638,7 @@
                 dropZones[i].addEventListener('dragover', function(e) {
                     if (gameWon || revealInProgress) return;
                     e.preventDefault();
-                    e.dataTransfer.dropEffect = 'copy';
+                    e.dataTransfer.dropEffect = 'move';
                     this.classList.add('drag-over');
                 });
                 
@@ -724,7 +669,6 @@
             dropZone.innerHTML = '';
             
             placedImages.set(dropZone.id, {src: imageSrc, name: imageName});
-            hideOriginalImage(imageSrc);
             
             var img = document.createElement('img');
             img.src = imageSrc;
@@ -756,7 +700,7 @@
             
             var placedImage = placedImages.get(tile.id);
             if (placedImage) {
-                showOriginalImage(placedImage.src);
+                // No re-enable needed since all tiles are in grid
             }
             
             var isMovieTile = tileNum % 2 === 0;
@@ -766,24 +710,6 @@
             tile.innerHTML = '<span style="color: ' + color + '; font-weight: bold; font-size: 12px;">' + label + '</span>';
             placedImages.delete(tile.id);
             checkIfAllTilesFilled();
-        }
-
-        function hideOriginalImage(imageSrc) {
-            var images = document.querySelectorAll('[data-src="' + imageSrc + '"]');
-            for (var i = 0; i < images.length; i++) {
-                if (images[i].classList.contains('movie-actor-tile')) {
-                    images[i].style.display = 'none';
-                }
-            }
-        }
-        
-        function showOriginalImage(imageSrc) {
-            var images = document.querySelectorAll('[data-src="' + imageSrc + '"]');
-            for (var i = 0; i < images.length; i++) {
-                if (images[i].classList.contains('movie-actor-tile')) {
-                    images[i].style.display = 'inline-block';
-                }
-            }
         }
 
         function checkIfAllTilesFilled() {
@@ -844,7 +770,7 @@
                     var item = incorrectTiles[i];
                     var placedImage = placedImages.get(item.tileId);
                     if (placedImage) {
-                        showOriginalImage(placedImage.src);
+                        // No re-enable needed
                     }
                     
                     var tileNumber = item.tileId.replace('dropTile', '');
@@ -875,6 +801,7 @@
             document.getElementById('attemptCounter').textContent = 'Attempt ' + currentAttempt + ' of ' + maxAttempts;
             revealInProgress = false;
             checkIfAllTilesFilled();
+            createGameGrid(); // Reset grid for next attempt
         }
         
         function showAttemptMessage(correct, total) {
@@ -901,7 +828,7 @@
             for (var i = 0; i < gameConfig.sequence.length; i++) {
                 sequenceNames.push(gameConfig.sequence[i].name);
             }
-            var progression = gameConfig.anchor.name + ' → ' + sequenceNames.join(' → ') + ' → ' + gameConfig.anchor.name;
+            var progression = gameConfig.anchor.name + ' → ' + sequenceNames.join(' → ');
             var winMessage = document.getElementById('winMessage');
             var gameMessage = document.getElementById('gameMessage');
             
@@ -919,7 +846,7 @@
             for (var i = 0; i < gameConfig.sequence.length; i++) {
                 sequenceNames.push(gameConfig.sequence[i].name);
             }
-            var progression = gameConfig.anchor.name + ' → ' + sequenceNames.join(' → ') + ' → ' + gameConfig.anchor.name;
+            var progression = gameConfig.anchor.name + ' → ' + sequenceNames.join(' → ');
             var attemptsText = currentAttempt === 1 ? "1 attempt" : currentAttempt + " attempts";
             var message = 'Movie Sequence ' + currentAttempt + '/7\n\n' + progression + '\n\nCompleted in ' + attemptsText + '!';
             
