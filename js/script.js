@@ -1,9 +1,8 @@
 document.addEventListener("DOMContentLoaded", () => {
-    // No admin panel logic since button/panel are commented out
-    // Add your custom grid or game logic here if needed
     const grid = document.querySelector(".game-grid");
+
+    // Dynamic tile loading to ensure images are set correctly
     if (grid) {
-        // Optional: Dynamic tile loading (if your original used JS)
         const tiles = [
             { src: "actors/Melissa_McCarthy.png", alt: "Melissa McCarthy" },
             { src: "movies/bridesmaids.png", alt: "Bridesmaids" },
@@ -23,20 +22,21 @@ document.addEventListener("DOMContentLoaded", () => {
             { src: "movies/identitythief.png", alt: "Identity Thief" },
             { src: "actors/Melissa_McCarthy.png", alt: "Melissa McCarthy" }
         ];
-        grid.innerHTML = ""; // Clear static tiles if present
+        grid.innerHTML = ""; // Clear any static or broken tiles
         tiles.forEach(tile => {
             const div = document.createElement("div");
             div.className = "tile";
-            div.innerHTML = `<img src="${tile.src}" alt="${tile.alt}">`;
+            div.innerHTML = `<img src="${tile.src}" alt="${tile.alt}" loading="lazy">`;
             grid.appendChild(div);
         });
-    }
 
-    // Fallback for image loading
-    document.querySelectorAll(".tile img").forEach(img => {
-        if (!img.complete || img.naturalWidth === 0) {
-            console.log(`Image not loaded: ${img.src}`);
-            img.src = "connact_logo.png"; // Fallback image
-        }
-    });
+        // Image loading fallback
+        grid.querySelectorAll("img").forEach(img => {
+            img.onerror = () => {
+                console.log(`Image failed to load: ${img.src}`);
+                img.src = "connact_logo.png"; // Fallback to logo
+                img.alt = "Fallback Image";
+            };
+        });
+    }
 });
