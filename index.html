@@ -326,11 +326,7 @@
     </div>
 
     <div class="game-container">
-        <div class="circle-container" id="circleContainer">
-            <div class="center-logo">
-                <img src="connact_logo.png" alt="Connact Logo" onerror="this.style.display='none';">
-            </div>
-        </div>
+        <div class="circle-container" id="circleContainer"></div>
         <button id="enterButton" class="enter-button" onclick="submitMove()" style="display: none;">Enter</button>
         <div class="png-grid" id="pngGrid"></div>
     </div>
@@ -417,6 +413,19 @@
             var radius = (containerSize - tileSize) / 2;
             var centerX = containerSize / 2;
             var centerY = containerSize / 2;
+
+            // Add the center logo first
+            var centerLogo = document.createElement('div');
+            centerLogo.className = 'center-logo';
+            var logoImg = document.createElement('img');
+            logoImg.src = 'connact_logo.png';
+            logoImg.alt = 'Connact Logo';
+            logoImg.onerror = function() { 
+                centerLogo.style.display = 'none'; 
+                console.log('Logo image not found');
+            };
+            centerLogo.appendChild(logoImg);
+            circleContainer.appendChild(centerLogo);
 
             // Create 16 positions in a circle
             for (var pos = 1; pos <= 16; pos++) {
