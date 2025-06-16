@@ -158,9 +158,11 @@
             background-color: #fff;
             cursor: grab;
             transition: transform 0.2s, opacity 0.2s, border-color 0.2s;
+            touch-action: none; /* Prevent scrolling when dragging */
+            user-select: none; /* Prevent text selection */
         }
 
-        .png-tile:hover {
+        .png-tile:hover, .png-tile:active {
             transform: scale(1.05);
             border-color: #007bff;
         }
@@ -375,6 +377,10 @@
         var draggedTile = null;
         var pngTiles = [];
         var finalJasonAdded = false; // Track if final Jason has been added
+        
+        // Touch support variables
+        var touchedTile = null;
+        var isDragging = false;
 
         // Initialize game
         function initializeGame() {
@@ -523,6 +529,7 @@
             var imageElements = document.querySelectorAll('.png-tile');
 
             for (var i = 0; i < imageElements.length; i++) {
+                // Desktop drag events
                 imageElements[i].addEventListener('dragstart', function(e) {
                     if (gameWon || revealInProgress) return;
                     
@@ -539,6 +546,78 @@
                 imageElements[i].addEventListener('dragend', function(e) {
                     this.classList.remove('dragging');
                     console.log('Drag ended');
+                });
+
+                // Mobile touch events
+                imageElements[i].addEventListener('touchstart', function(e) {
+                    if (gameWon || revealInProgress) return;
+                    e.preventDefault();
+                    
+                    touchedTile = this;
+                    isDragging = true;
+                    this.classList.add('dragging');
+                    
+                    var imgName = this.getAttribute('data-name');
+                    console.log('Touch started on', imgName);
+                });
+
+                imageElements[i].addEventListener('touchmove', function(e) {
+                    if (!isDragging || !touchedTile) return;
+                    e.preventDefault();
+                    
+                    var touch = e.touches[0];
+                    var elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+                    
+                    // Remove drag-over from all drop zones
+                    var allZones = document.querySelectorAll('.drop-zone');
+                    for (var j = 0; j < allZones.length; j++) {
+                        allZones[j].classList.remove('drag-over');
+                    }
+                    
+                    // Add drag-over to current drop zone
+                    if (elementBelow && elementBelow.classList.contains('drop-zone')) {
+                        elementBelow.classList.add('drag-over');
+                        document.getElementById('enterButton').style.display = 'block';
+                    } else {
+                        document.getElementById('enterButton').style.display = 'none';
+                    }
+                });
+
+                imageElements[i].addEventListener('touchend', function(e) {
+                    if (!isDragging || !touchedTile) return;
+                    e.preventDefault();
+                    
+                    var touch = e.changedTouches[0];
+                    var elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+                    
+                    this.classList.remove('dragging');
+                    
+                    if (elementBelow && elementBelow.classList.contains('drop-zone')) {
+                        var imageSrc = touchedTile.getAttribute('data-src');
+                        var imageName = touchedTile.getAttribute('data-name');
+                        
+                        if (!elementBelow.querySelector('img')) {
+                            // Set up for submission
+                            draggedTile = touchedTile;
+                            touchedTile.style.opacity = '0.3';
+                            elementBelow.style.backgroundColor = '#fff3cd';
+                            elementBelow.style.borderColor = '#ffc107';
+                            elementBelow.classList.add('drag-over');
+                            
+                            var enterButton = document.getElementById('enterButton');
+                            enterButton.style.display = 'block';
+                            enterButton.style.backgroundColor = '#28a745';
+                            enterButton.textContent = 'Submit "' + imageName + '"';
+                            
+                            console.log('Touch ready to submit:', imageName, 'to', elementBelow.id);
+                        }
+                    } else {
+                        // Reset if not dropped on valid zone
+                        resetDragState();
+                    }
+                    
+                    touchedTile = null;
+                    isDragging = false;
                 });
             }
 
@@ -908,7 +987,11 @@
             enterButton.textContent = 'Enter';
             enterButton.style.backgroundColor = '#007bff';
             
+            // Reset both drag and touch states
             draggedTile = null;
+            touchedTile = null;
+            isDragging = false;
+            
             console.log('Drag state reset');
         }
 
