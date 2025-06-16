@@ -50,14 +50,22 @@
 
         .drop-zone {
             cursor: default;
-            transition: background-color 0.3s, border-color 0.3s;
+            transition: all 0.3s ease;
             text-align: center;
+            border-style: solid;
         }
 
         .drop-zone.drag-over {
             background-color: #e8f5e8;
             border-color: #4CAF50;
             border-style: dashed;
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+        }
+
+        .drop-zone:not(.drag-over):hover {
+            background-color: #f8f9fa;
+            border-color: #007bff;
         }
 
         .tile img, .drop-zone img {
@@ -97,12 +105,36 @@
         }
 
         .sequence-grid {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
+            display: grid;
+            grid-template-columns: repeat(4, 100px);
+            grid-template-rows: repeat(1, 100px);
             gap: 5px;
-            max-width: 420px;
+            justify-content: center;
             margin-bottom: 10px;
+            position: relative; /* For absolute positioning of Jason */
+        }
+
+        .final-jason-tile {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            left: -110px; /* 100px width + 10px gap to the left of grid */
+            top: 315px; /* Row 4 position: (3 rows * 100px) + (3 gaps * 5px) = 315px */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 4px solid #000;
+            box-sizing: border-box;
+            border-radius: 8px;
+            background-color: #fff;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .final-jason-tile img {
+            width: 92px;
+            height: 92px;
+            object-fit: cover;
+            border-radius: 4px;
         }
 
         .png-grid {
@@ -125,11 +157,22 @@
             border-radius: 4px;
             background-color: #fff;
             cursor: grab;
-            transition: transform 0.2s;
+            transition: transform 0.2s, opacity 0.2s, border-color 0.2s;
         }
 
         .png-tile:hover {
             transform: scale(1.05);
+            border-color: #007bff;
+        }
+
+        .png-tile.dragging {
+            opacity: 0.3;
+            border-color: #28a745;
+            transform: scale(0.95);
+        }
+
+        .png-tile:active {
+            cursor: grabbing;
         }
 
         .png-tile img {
@@ -144,15 +187,27 @@
             background: #007bff;
             color: white;
             border: none;
-            padding: 10px 20px;
+            padding: 12px 24px;
             border-radius: 8px;
             font-size: 16px;
+            font-weight: bold;
             cursor: pointer;
-            margin-top: 10px;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,123,255,0.3);
+            animation: pulse 1.5s infinite;
         }
 
         .enter-button:hover {
             background: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,123,255,0.4);
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 2px 8px rgba(0,123,255,0.3); }
+            50% { box-shadow: 0 4px 16px rgba(0,123,255,0.6); }
+            100% { box-shadow: 0 2px 8px rgba(0,123,255,0.3); }
         }
 
         .game-info {
@@ -160,6 +215,17 @@
             margin: 10px 0;
             font-size: 18px;
             font-weight: bold;
+        }
+
+        .game-instructions {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 15px;
+            font-weight: normal;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.4;
         }
 
         .message {
@@ -198,246 +264,6 @@
             background: #218838;
         }
 
-        .admin-panel {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.9);
-            z-index: 1000;
-            overflow-y: auto;
-        }
-
-        .admin-content {
-            background: white;
-            margin: 20px auto;
-            padding: 30px;
-            max-width: 1000px;
-            border-radius: 10px;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        .admin-header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #007bff;
-        }
-
-        .admin-section {
-            margin-bottom: 30px;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            background: #f8f9fa;
-        }
-
-        .admin-section h3 {
-            margin-top: 0;
-            color: #007bff;
-            font-size: 18px;
-            border-bottom: 1px solid #ddd;
-            padding-bottom: 10px;
-        }
-
-        .admin-input {
-            width: 100%;
-            padding: 10px;
-            margin: 8px 0;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 14px;
-        }
-
-        .file-upload-zone {
-            border: 3px dashed #007bff;
-            border-radius: 10px;
-            padding: 40px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            background: white;
-            margin: 15px 0;
-        }
-
-        .file-upload-zone:hover {
-            background: #f0f8ff;
-            border-color: #0056b3;
-        }
-
-        .file-upload-zone.dragover {
-            background: #e3f2fd;
-            border-color: #1976d2;
-        }
-
-        .uploaded-files {
-            margin-top: 20px;
-            max-height: 300px;
-            overflow-y: auto;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            background: white;
-        }
-
-        .file-item {
-            display: flex;
-            align-items: center;
-            padding: 10px;
-            border-bottom: 1px solid #eee;
-        }
-
-        .file-item:last-child {
-            border-bottom: none;
-        }
-
-        .file-preview {
-            width: 50px;
-            height: 50px;
-            object-fit: cover;
-            border-radius: 5px;
-            margin-right: 15px;
-            border: 1px solid #ddd;
-        }
-
-        .file-info {
-            flex: 1;
-        }
-
-        .file-name {
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .file-type {
-            color: #666;
-            font-size: 12px;
-        }
-
-        .remove-file {
-            background: #dc3545;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 3px;
-            cursor: pointer;
-            font-size: 12px;
-        }
-
-        .sequence-builder {
-            background: white;
-            border-radius: 8px;
-            padding: 20px;
-            margin: 15px 0;
-        }
-
-        .sequence-step {
-            display: flex;
-            align-items: center;
-            margin: 12px 0;
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            background: #f8f9fa;
-        }
-
-        .step-number {
-            background: #007bff;
-            color: white;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 20px;
-            font-weight: bold;
-            font-size: 16px;
-        }
-
-        .step-content {
-            flex: 1;
-            display: grid;
-            grid-template-columns: 2fr 3fr;
-            gap: 15px;
-            align-items: center;
-        }
-
-        .step-content select, .step-content input {
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 14px;
-        }
-
-        .admin-buttons {
-            text-align: center;
-            margin-top: 40px;
-            padding-top: 30px;
-            border-top: 2px solid #ddd;
-        }
-
-        .admin-buttons button {
-            margin: 0 15px;
-            padding: 15px 30px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-            transition: background-color 0.3s;
-        }
-
-        .save-btn {
-            background: #28a745;
-            color: white;
-        }
-
-        .save-btn:hover {
-            background: #218838;
-        }
-
-        .close-btn {
-            background: #6c757d;
-            color: white;
-        }
-
-        .close-btn:hover {
-            background: #5a6268;
-        }
-
-        .export-btn {
-            background: #17a2b8;
-            color: white;
-        }
-
-        .export-btn:hover {
-            background: #138496;
-        }
-
-        .admin-access-btn {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: #007bff;
-            color: white;
-            border: none;
-            padding: 15px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 20px;
-            width: 60px;
-            height: 60px;
-            z-index: 100;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-
-        .admin-access-btn:hover {
-            background: #0056b3;
-        }
-
         /* Mobile Adjustments */
         @media screen and (max-width: 360px) {
             .tile, .drop-zone {
@@ -451,7 +277,20 @@
             }
 
             .sequence-grid {
-                max-width: 210px;
+                grid-template-columns: repeat(4, 50px);
+                gap: 2px;
+            }
+
+            .final-jason-tile {
+                width: 50px;
+                height: 50px;
+                left: -55px; /* 50px width + 5px gap to the left of grid */
+                top: 156px; /* Row 4 position: (3 rows * 50px) + (3 gaps * 2px) = 156px */
+            }
+
+            .final-jason-tile img {
+                width: 46px;
+                height: 46px;
             }
 
             .png-grid {
@@ -484,6 +323,7 @@
     </div>
 
     <div class="game-info">
+        <div class="game-instructions">Connect actors through movies using just the images below to get back to our starting actor</div>
         <div id="attemptCounter">Attempt 1 of 7</div>
         <div id="gameMessage" class="message" style="display: none;"></div>
         <div id="winMessage" class="win-message" style="display: none;"></div>
@@ -493,63 +333,6 @@
         <div class="sequence-grid" id="sequenceGrid"></div>
         <button id="enterButton" class="enter-button" onclick="submitMove()" style="display: none;">Enter</button>
         <div class="png-grid" id="pngGrid"></div>
-    </div>
-
-    <button class="admin-access-btn" onclick="openAdmin()" title="Admin Panel">⚙️</button>
-
-    <div id="adminPanel" class="admin-panel">
-        <div class="admin-content">
-            <div class="admin-header">
-                <h1>🔧 Game Admin Panel</h1>
-                <p>Upload files, set sequence, and customize your game</p>
-            </div>
-            
-            <div class="admin-section">
-                <h3>📁 Upload PNG Files</h3>
-                <div class="file-upload-zone" id="fileUploadZone">
-                    <input type="file" id="fileInput" multiple accept=".png" style="display: none;">
-                    <h4>📎 Drag & Drop PNG Files Here</h4>
-                    <p>Or click to browse for actor and movie images</p>
-                    <small>Supports multiple file upload</small>
-                </div>
-                <div id="uploadedFiles" class="uploaded-files" style="display: none;">
-                    <div id="filesList"></div>
-                </div>
-            </div>
-
-            <div class="admin-section">
-                <h3>🎭 Choose Anchor Actor</h3>
-                <p>Select which actor appears in position 1:</p>
-                <select id="anchorSelect" class="admin-input">
-                    <option value="">Choose anchor actor...</option>
-                </select>
-            </div>
-
-            <div class="admin-section">
-                <h3>🎬 Build Game Sequence</h3>
-                <p>Create the 15-step sequence:</p>
-                <div class="sequence-builder">
-                    <div id="sequenceSteps"></div>
-                </div>
-                <button class="save-btn" onclick="addSequenceStep()" style="margin: 10px; padding: 10px 20px;">+ Add Step</button>
-                <button class="export-btn" onclick="clearSequence()" style="margin: 10px; padding: 10px 20px;">Clear All</button>
-            </div>
-
-            <div class="admin-section">
-                <h3>⚙️ Game Settings</h3>
-                <label>SMS Number:</label>
-                <input type="text" id="smsNumber" class="admin-input" value="+61459754708">
-                
-                <label>Logo File:</label>
-                <input type="text" id="logoFile" class="admin-input" value="connact_logo.png">
-            </div>
-
-            <div class="admin-buttons">
-                <button class="save-btn" onclick="saveGameConfig()">💾 Save & Update Game</button>
-                <button class="export-btn" onclick="exportGame()">📥 Export Configuration</button>
-                <button class="close-btn" onclick="closeAdmin()">✖ Close</button>
-            </div>
-        </div>
     </div>
 
     <script>
@@ -581,7 +364,6 @@
         };
 
         // Variables
-        var uploadedFiles = new Map();
         var currentAttempt = 1;
         var maxAttempts = 7;
         var gameWon = false;
@@ -589,12 +371,20 @@
         var correctAnswers = {};
         var placedImages = new Map();
         var sequencePositions = [1, 2, 3, 4, 8, 7, 6, 5, 9, 10, 11, 12, 16, 15, 14, 13]; // Zigzag order
-        var currentPosition = 1;
+        var currentPosition = 2;
         var draggedTile = null;
         var pngTiles = [];
+        var finalJasonAdded = false; // Track if final Jason has been added
 
         // Initialize game
         function initializeGame() {
+            currentPosition = 2; // Reset to 2 since we have anchor (1) and first drop zone (2)
+            gameWon = false;
+            revealInProgress = false;
+            placedImages.clear();
+            draggedTile = null;
+            finalJasonAdded = false; // Reset the final Jason flag
+            
             generateCorrectAnswers();
             createInitialSequence();
             createPngGrid();
@@ -605,10 +395,46 @@
         function generateCorrectAnswers() {
             correctAnswers = {};
             for (var i = 0; i < gameConfig.sequence.length; i++) {
-                var pos = sequencePositions[i + 1]; // Start from position 2
+                var pos = sequencePositions[i + 1]; // Start from position 2 (sequencePositions[1])
                 correctAnswers['dropTile' + pos] = gameConfig.sequence[i].file;
             }
-            console.log('Correct answers generated:', correctAnswers);
+            
+            // Debug: Log the correct answers mapping
+            console.log('=== CORRECT ANSWERS MAPPING ===');
+            console.log('Anchor at position 1:', gameConfig.anchor.name, '→', gameConfig.anchor.file);
+            for (var i = 0; i < gameConfig.sequence.length; i++) {
+                var pos = sequencePositions[i + 1];
+                var item = gameConfig.sequence[i];
+                console.log('dropTile' + pos + ':', item.name, '(' + item.type + ')', '→', item.file);
+                console.log('  Sequence index:', i, '| Grid position:', pos);
+            }
+            console.log('===============================');
+        }
+
+        function updateGridSize() {
+            var sequenceGrid = document.getElementById('sequenceGrid');
+            var allTiles = sequenceGrid.querySelectorAll('.tile:not(.final-jason-tile), .drop-zone');
+            var maxRow = 1;
+            
+            // Find the highest row number currently in use (excluding Jason)
+            for (var i = 0; i < allTiles.length; i++) {
+                var gridArea = allTiles[i].style.gridArea;
+                if (gridArea) {
+                    var parts = gridArea.split(' / ');
+                    var row = parseInt(parts[0]);
+                    if (row > maxRow) {
+                        maxRow = row;
+                    }
+                }
+            }
+            
+            // Check if we're on mobile (screen width <= 360px)
+            var isMobile = window.innerWidth <= 360;
+            var tileSize = isMobile ? '50px' : '100px';
+            
+            // Update the grid to only have the rows we need
+            sequenceGrid.style.gridTemplateRows = 'repeat(' + maxRow + ', ' + tileSize + ')';
+            console.log('Grid updated to', maxRow, 'rows (' + tileSize + ' each) - Jason positioned outside');
         }
 
         function createInitialSequence() {
@@ -619,6 +445,7 @@
             var anchorTile = document.createElement('div');
             anchorTile.className = 'tile';
             anchorTile.style.position = 'relative';
+            anchorTile.style.gridArea = '1 / 1'; // Row 1, Column 1
             anchorTile.setAttribute('data-src', gameConfig.anchor.file);
             anchorTile.setAttribute('data-name', gameConfig.anchor.name);
 
@@ -636,33 +463,47 @@
             var dropZone = document.createElement('div');
             dropZone.className = 'drop-zone';
             dropZone.id = 'dropTile2';
+            dropZone.style.gridArea = '1 / 2'; // Row 1, Column 2
             dropZone.innerHTML = '<span style="color: #007bff; font-weight: bold; font-size: 12px;">Movie</span>';
             sequenceGrid.appendChild(dropZone);
-
-            // Center the initial two tiles
-            sequenceGrid.style.justifyContent = 'center';
-            console.log('Initial sequence created');
+            
+            // Update grid size to only show needed rows
+            updateGridSize();
+            
+            console.log('=== INITIAL SETUP ===');
+            console.log('Position 1 (anchor):', gameConfig.anchor.name, '→', gameConfig.anchor.file);
+            console.log('Position 2 (first drop zone) expects:', correctAnswers['dropTile2']);
+            console.log('First sequence item:', gameConfig.sequence[0].name, '→', gameConfig.sequence[0].file);
+            console.log('Current position after setup:', currentPosition);
+            console.log('====================');
         }
 
         function createPngGrid() {
             var pngGrid = document.getElementById('pngGrid');
             pngGrid.innerHTML = '';
+            pngTiles = [];
 
             var allImages = gameConfig.sequence.slice();
-            // Shuffle array
+            
+            // Traditional array shuffle (Fisher-Yates)
             for (var i = allImages.length - 1; i > 0; i--) {
                 var j = Math.floor(Math.random() * (i + 1));
-                [allImages[i], allImages[j]] = [allImages[j], allImages[i]];
+                var temp = allImages[i];
+                allImages[i] = allImages[j];
+                allImages[j] = temp;
             }
 
+            console.log('=== PNG TILES CREATED ===');
             for (var i = 0; i < allImages.length; i++) {
                 var item = allImages[i];
                 var tile = document.createElement('div');
                 tile.className = 'png-tile';
-                tile.setAttribute('draggable', 'true'); // Explicitly set draggable
+                tile.setAttribute('draggable', 'true');
                 tile.setAttribute('data-src', item.file);
                 tile.setAttribute('data-name', item.name);
                 pngTiles.push(tile);
+
+                console.log('PNG Tile:', item.name, '→', item.file);
 
                 var img = document.createElement('img');
                 img.src = item.file;
@@ -674,15 +515,15 @@
                 tile.appendChild(img);
                 pngGrid.appendChild(tile);
             }
+            console.log('========================');
             console.log('PNG grid created with', pngTiles.length, 'tiles');
         }
 
         function attachEventListeners() {
-            var dropZones = document.querySelectorAll('.drop-zone');
             var imageElements = document.querySelectorAll('.png-tile');
 
-            imageElements.forEach(function(tile) {
-                tile.addEventListener('dragstart', function(e) {
+            for (var i = 0; i < imageElements.length; i++) {
+                imageElements[i].addEventListener('dragstart', function(e) {
                     if (gameWon || revealInProgress) return;
                     
                     draggedTile = this;
@@ -692,86 +533,168 @@
                     e.dataTransfer.setData('text/name', imgName);
                     e.dataTransfer.effectAllowed = 'move';
                     this.classList.add('dragging');
-                    document.getElementById('enterButton').style.display = 'block';
                     console.log('Drag started on', imgName);
                 });
 
-                tile.addEventListener('dragend', function(e) {
+                imageElements[i].addEventListener('dragend', function(e) {
                     this.classList.remove('dragging');
-                    if (!document.querySelector('.drop-zone.drag-over')) {
-                        document.getElementById('enterButton').style.display = 'none';
-                    }
                     console.log('Drag ended');
                 });
-            });
+            }
 
-            dropZones.forEach(function(dropZone) {
-                dropZone.addEventListener('dragover', function(e) {
+            // Attach listeners to existing drop zones
+            attachDropZoneListeners();
+        }
+
+        function attachDropZoneListeners() {
+            var dropZones = document.querySelectorAll('.drop-zone');
+            
+            for (var i = 0; i < dropZones.length; i++) {
+                // Remove existing listeners by cloning the element
+                var newDropZone = dropZones[i].cloneNode(true);
+                dropZones[i].parentNode.replaceChild(newDropZone, dropZones[i]);
+                
+                // Add fresh event listeners
+                newDropZone.addEventListener('dragover', function(e) {
                     if (gameWon || revealInProgress) return;
                     e.preventDefault();
                     e.dataTransfer.dropEffect = 'move';
-                    this.classList.add('drag-over');
-                    console.log('Drag over', dropZone.id);
-                });
-                
-                dropZone.addEventListener('dragleave', function(e) {
-                    if (!this.contains(e.relatedTarget)) {
-                        this.classList.remove('drag-over');
-                        document.getElementById('enterButton').style.display = 'none';
+                    
+                    // Remove drag-over from all other zones
+                    var allZones = document.querySelectorAll('.drop-zone');
+                    for (var j = 0; j < allZones.length; j++) {
+                        allZones[j].classList.remove('drag-over');
                     }
-                    console.log('Drag leave', dropZone.id);
+                    
+                    this.classList.add('drag-over');
+                    document.getElementById('enterButton').style.display = 'block';
+                    console.log('Drag over', this.id);
                 });
                 
-                dropZone.addEventListener('drop', function(e) {
+                newDropZone.addEventListener('dragleave', function(e) {
+                    // Only remove if we're actually leaving the drop zone area
+                    var rect = this.getBoundingClientRect();
+                    var x = e.clientX;
+                    var y = e.clientY;
+                    
+                    if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
+                        this.classList.remove('drag-over');
+                        // Check if any zones still have drag-over
+                        if (!document.querySelector('.drop-zone.drag-over')) {
+                            document.getElementById('enterButton').style.display = 'none';
+                        }
+                    }
+                    console.log('Drag leave', this.id);
+                });
+                
+                newDropZone.addEventListener('drop', function(e) {
                     if (gameWon || revealInProgress) return;
                     
                     e.preventDefault();
-                    this.classList.remove('drag-over');
                     
                     var imageSrc = e.dataTransfer.getData('text/plain');
                     var imageName = e.dataTransfer.getData('text/name');
-                    if (imageSrc && !this.querySelector('img')) {
-                        draggedTile.style.opacity = '0.5'; // Visual feedback
-                        document.getElementById('enterButton').style.display = 'block';
-                        console.log('Drop on', this.id, 'with', imageName);
+                    
+                    if (imageSrc && !this.querySelector('img') && draggedTile) {
+                        // Visual feedback that something is ready to be submitted
+                        draggedTile.style.opacity = '0.3';
+                        this.style.backgroundColor = '#fff3cd';
+                        this.style.borderColor = '#ffc107';
+                        
+                        var enterButton = document.getElementById('enterButton');
+                        enterButton.style.display = 'block';
+                        enterButton.style.backgroundColor = '#28a745';
+                        enterButton.textContent = 'Submit "' + imageName + '"';
+                        
+                        console.log('Ready to submit:', imageName, 'to', this.id);
                     }
                 });
-            });
+            }
         }
 
         function submitMove() {
-            if (!draggedTile || !document.querySelector('.drop-zone.drag-over')) return;
+            if (!draggedTile) {
+                console.log('No dragged tile');
+                return;
+            }
 
             var dropZone = document.querySelector('.drop-zone.drag-over');
+            if (!dropZone) {
+                console.log('No drop zone with drag-over class');
+                return;
+            }
+
             var imageSrc = draggedTile.getAttribute('data-src');
             var imageName = draggedTile.getAttribute('data-name');
             var correctImage = correctAnswers[dropZone.id];
 
-            console.log('Submit move:', dropZone.id, imageSrc, correctImage);
+            console.log('=== SUBMIT MOVE DEBUG ===');
+            console.log('Drop Zone:', dropZone.id);
+            console.log('Player dragged:', imageName, '→', imageSrc);
+            console.log('Expected:', correctImage);
+            console.log('Match:', imageSrc === correctImage);
+            console.log('========================');
+            
             if (imageSrc === correctImage) {
+                // Correct move
                 placeImageInTile(dropZone, imageSrc, imageName);
                 draggedTile.parentNode.removeChild(draggedTile);
                 draggedTile = null;
-                addNextTile();
-                checkIfAllTilesFilled();
-                document.getElementById('enterButton').style.display = 'none';
-                console.log('Correct move, added tile', dropZone.id);
-            } else {
+                
+                // Clear visual feedback
                 dropZone.classList.remove('drag-over');
-                draggedTile.style.opacity = '1';
-                document.getElementById('gameMessage').innerHTML = 'It was wrong, you\'ve ' + (maxAttempts - currentAttempt) + ' more attempts to go, good luck!';
-                document.getElementById('gameMessage').style.display = 'block';
+                dropZone.style.backgroundColor = '';
+                dropZone.style.borderColor = '';
                 document.getElementById('enterButton').style.display = 'none';
+                document.getElementById('gameMessage').style.display = 'none';
+                
+                // Check if this is NOT the last movie, then add next tile
+                var sequenceIndex = currentPosition - 2;
+                var isLastMovie = sequenceIndex === gameConfig.sequence.length - 1;
+                
+                if (!isLastMovie) {
+                    addNextTile();
+                }
+                
+                checkIfAllTilesFilled();
+                console.log('✅ CORRECT! ' + (isLastMovie ? 'Final movie completed!' : 'Added next tile'));
+            } else {
+                // Incorrect move
+                dropZone.classList.remove('drag-over');
+                dropZone.style.backgroundColor = '';
+                dropZone.style.borderColor = '';
+                draggedTile.style.opacity = '1';
+                
+                var remainingAttempts = maxAttempts - currentAttempt;
+                document.getElementById('gameMessage').innerHTML = '❌ Wrong! You have ' + remainingAttempts + ' attempts remaining.';
+                document.getElementById('gameMessage').style.display = 'block';
+                document.getElementById('gameMessage').style.background = '#f8d7da';
+                document.getElementById('gameMessage').style.borderColor = '#f5c6cb';
+                document.getElementById('gameMessage').style.color = '#721c24';
+                
+                document.getElementById('enterButton').style.display = 'none';
+                draggedTile = null;
+                
                 if (currentAttempt < maxAttempts) {
                     currentAttempt++;
-                    document.getElementById('attemptCounter').textContent = 'Attempt ' + currentAttempt + ' of ' + maxAttempts';
+                    document.getElementById('attemptCounter').textContent = 'Attempt ' + currentAttempt + ' of ' + maxAttempts;
+                } else {
+                    // Game over
+                    document.getElementById('gameMessage').innerHTML = 'Game Over! You have used all ' + maxAttempts + ' attempts.';
+                    gameWon = true; // Prevent further interactions
                 }
-                console.log('Incorrect move, attempt', currentAttempt);
+                console.log('❌ INCORRECT! Attempt', currentAttempt);
             }
         }
 
         function placeImageInTile(dropZone, imageSrc, imageName) {
+            // Preserve the grid positioning
+            var gridArea = dropZone.style.gridArea;
+            
             dropZone.innerHTML = '';
+            
+            // Restore grid positioning  
+            dropZone.style.gridArea = gridArea;
             
             placedImages.set(dropZone.id, {src: imageSrc, name: imageName});
             
@@ -785,6 +708,7 @@
             
             img.onerror = function() {
                 dropZone.innerHTML = '<div style="padding:10px; color:#999; font-size:10px;">' + imageName + '<br><small>(Image not found)</small></div>';
+                dropZone.style.gridArea = gridArea; // Restore grid positioning even on error
             };
             
             var clearButton = document.createElement('div');
@@ -797,26 +721,36 @@
             
             dropZone.appendChild(img);
             dropZone.appendChild(clearButton);
-            console.log('Image placed in', dropZone.id);
+            console.log('Image placed in', dropZone.id, 'at grid position', gridArea);
         }
 
         function clearTile(tile) {
             var tileNumber = tile.id.replace('dropTile', '');
             var tileNum = parseInt(tileNumber);
             
+            // Preserve grid positioning
+            var gridArea = tile.style.gridArea;
+            
             var placedImage = placedImages.get(tile.id);
-            if (placedImage) {
-                // No re-enable needed
-            }
             
             var isMovieTile = tileNum % 2 === 0;
             var color = isMovieTile ? '#007bff' : '#28a745';
             var label = isMovieTile ? 'Movie' : 'Actor';
             
             tile.innerHTML = '<span style="color: ' + color + '; font-weight: bold; font-size: 12px;">' + label + '</span>';
+            tile.style.backgroundColor = '';
+            tile.style.borderColor = '';
+            
+            // Restore grid positioning
+            tile.style.gridArea = gridArea;
+            
             placedImages.delete(tile.id);
+            
+            // Reattach listeners after clearing
+            attachDropZoneListeners();
+            
             checkIfAllTilesFilled();
-            console.log('Tile cleared', tile.id);
+            console.log('Tile cleared', tile.id, 'at grid position', gridArea);
         }
 
         function addNextTile() {
@@ -826,130 +760,101 @@
             var sequenceGrid = document.getElementById('sequenceGrid');
             var newDropZone = document.createElement('div');
             newDropZone.className = 'drop-zone';
-            newDropZone.id = 'dropTile' + sequencePositions[currentPosition - 1];
+            
+            var gridPosition = sequencePositions[currentPosition - 1];
+            newDropZone.id = 'dropTile' + gridPosition;
+            
+            // Convert position to grid coordinates (1-16 to row/col) - NO SHIFTING
+            var row = Math.ceil(gridPosition / 4);
+            var col = ((gridPosition - 1) % 4) + 1;
+            
+            newDropZone.style.gridArea = row + ' / ' + col;
 
-            var isMovieTile = (currentPosition - 1) % 2 === 0;
+            // Determine tile type based on sequence index, not position number
+            var sequenceIndex = currentPosition - 2; // -2 because position 1 is anchor, position 2 is first sequence item
+            var isMovieTile = sequenceIndex % 2 === 0; // Even sequence indices are movies, odd are actors
             var color = isMovieTile ? '#007bff' : '#28a745';
             var label = isMovieTile ? 'Movie' : 'Actor';
 
             newDropZone.innerHTML = '<span style="color: ' + color + '; font-weight: bold; font-size: 12px;">' + label + '</span>';
             sequenceGrid.appendChild(newDropZone);
 
-            // No shifting, just add as per zigzag
-            console.log('Added next tile at position', sequencePositions[currentPosition - 1]);
+            // Check if this tile is in the final row (row 4) AND it's an actor tile AND we haven't added Jason yet
+            var isInFinalRow = row === 4;
+            var isActorTile = !isMovieTile;
+            
+            if (isInFinalRow && isActorTile && !finalJasonAdded) {
+                // Add final Jason Bateman tile OUTSIDE the grid
+                addFinalJasonBateman();
+                finalJasonAdded = true;
+                console.log('🎯 First actor in final row - Added Jason Bateman completion target OUTSIDE the grid!');
+            }
+
+            // Update grid size to accommodate new tile
+            updateGridSize();
+
+            // Reattach all drop zone listeners to include the new one
+            attachDropZoneListeners();
+
+            var expectedItem = gameConfig.sequence[sequenceIndex];
+            console.log('=== ADDED NEW TILE ===');
+            console.log('Current position:', currentPosition);
+            console.log('Grid position:', gridPosition, '(Row ' + row + ', Col ' + col + ')');
+            console.log('Sequence index:', sequenceIndex);
+            console.log('Expected:', expectedItem ? expectedItem.name : 'unknown', '(' + label.toLowerCase() + ')');
+            console.log('Expected file:', expectedItem ? expectedItem.file : 'unknown');
+            console.log('======================');
+        }
+
+        function addFinalJasonBateman() {
+            var sequenceGrid = document.getElementById('sequenceGrid');
+            
+            // Create Jason as an absolutely positioned element OUTSIDE the grid
+            var finalTile = document.createElement('div');
+            finalTile.className = 'tile final-jason-tile';
+            finalTile.id = 'finalJasonTile';
+            finalTile.setAttribute('data-src', gameConfig.anchor.file);
+            finalTile.setAttribute('data-name', gameConfig.anchor.name + ' (Circuit Complete)');
+
+            var img = document.createElement('img');
+            img.src = gameConfig.anchor.file;
+            img.alt = gameConfig.anchor.name;
+            img.onerror = function() {
+                finalTile.innerHTML = '<div style="padding:10px; text-align:center; color:#999; font-size:10px;">' + gameConfig.anchor.name + '<br><small>(Circuit Complete)</small></div>';
+            };
+
+            finalTile.appendChild(img);
+            
+            // Add a small indicator that this completes the circuit
+            var circuitLabel = document.createElement('div');
+            circuitLabel.style.position = 'absolute';
+            circuitLabel.style.bottom = '2px';
+            circuitLabel.style.left = '2px';
+            circuitLabel.style.background = 'rgba(40, 167, 69, 0.9)';
+            circuitLabel.style.color = 'white';
+            circuitLabel.style.fontSize = '8px';
+            circuitLabel.style.padding = '1px 3px';
+            circuitLabel.style.borderRadius = '3px';
+            circuitLabel.textContent = 'COMPLETE';
+            finalTile.appendChild(circuitLabel);
+            
+            // Add Jason to the sequence grid container (but positioned absolutely outside)
+            sequenceGrid.appendChild(finalTile);
+            
+            console.log('Added final Jason Bateman tile as absolutely positioned element outside the grid');
         }
 
         function checkIfAllTilesFilled() {
             var totalTiles = Object.keys(correctAnswers).length;
             var filledTiles = placedImages.size;
-            var revealButton = document.getElementById('revealButton');
             
-            revealButton.disabled = filledTiles < totalTiles;
             if (filledTiles === totalTiles) {
-                revealButton.textContent = "Reveal Answers";
-            } else {
-                revealButton.textContent = "Place actors & movies to connect the sequence";
+                gameWon = true;
+                showWinMessage();
             }
             console.log('Checked tiles:', filledTiles, '/', totalTiles);
         }
 
-        function revealAnswers() {
-            if (gameWon || revealInProgress) return;
-            
-            revealInProgress = true;
-            var revealButton = document.getElementById('revealButton');
-            revealButton.disabled = true;
-            revealButton.textContent = "Checking...";
-            
-            var correctCount = 0;
-            var totalTiles = Object.keys(correctAnswers).length;
-            var incorrectTiles = [];
-            
-            placedImages.forEach(function(imageData, tileId) {
-                var correctImage = correctAnswers[tileId];
-                var dropZone = document.getElementById(tileId);
-                
-                if (imageData.src === correctImage) {
-                    correctCount++;
-                    var clearButton = dropZone.querySelector('.clear-button');
-                    if (clearButton) clearButton.remove();
-                    
-                    var img = dropZone.querySelector('img');
-                    if (img) {
-                        img.style.border = '2px solid green';
-                    }
-                } else {
-                    incorrectTiles.push({tileId: tileId, dropZone: dropZone});
-                }
-            });
-            
-            for (var i = 0; i < incorrectTiles.length; i++) {
-                var item = incorrectTiles[i];
-                var img = item.dropZone.querySelector('img');
-                if (img) {
-                    img.style.border = '2px solid red';
-                    img.style.opacity = '0.5';
-                }
-            }
-            
-            setTimeout(function() {
-                for (var i = 0; i < incorrectTiles.length; i++) {
-                    var item = incorrectTiles[i];
-                    var placedImage = placedImages.get(item.tileId);
-                    if (placedImage) {
-                        // No re-enable needed
-                    }
-                    
-                    var tileNumber = item.tileId.replace('dropTile', '');
-                    var tileNum = parseInt(tileNumber);
-                    
-                    var isMovieTile = tileNum % 2 === 0;
-                    var color = isMovieTile ? '#007bff' : '#28a745';
-                    var label = isMovieTile ? 'Movie' : 'Actor';
-                    
-                    item.dropZone.innerHTML = '<span style="color: ' + color + '; font-weight: bold; font-size: 12px;">' + label + '</span>';
-                    placedImages.delete(item.tileId);
-                }
-                
-                if (correctCount === totalTiles) {
-                    gameWon = true;
-                    showWinMessage();
-                } else if (currentAttempt >= maxAttempts) {
-                    showGameOverMessage();
-                } else {
-                    showAttemptMessage(correctCount, totalTiles);
-                    prepareNextAttempt();
-                }
-                console.log('Reveal completed, correct:', correctCount);
-            }, 2000);
-        }
-
-        function prepareNextAttempt() {
-            currentAttempt++;
-            document.getElementById('attemptCounter').textContent = 'Attempt ' + currentAttempt + ' of ' + maxAttempts';
-            revealInProgress = false;
-            checkIfAllTilesFilled();
-            console.log('Prepared next attempt:', currentAttempt);
-        }
-        
-        function showAttemptMessage(correct, total) {
-            var gameMessage = document.getElementById('gameMessage');
-            gameMessage.innerHTML = 'It was wrong, you\'ve ' + (maxAttempts - currentAttempt) + ' more attempts to go, good luck!';
-            gameMessage.style.display = 'block';
-            console.log('Attempt message shown');
-        }
-        
-        function showGameOverMessage() {
-            var gameMessage = document.getElementById('gameMessage');
-            gameMessage.textContent = 'Game Over! You have used all ' + maxAttempts + ' attempts.';
-            gameMessage.style.display = 'block';
-            gameMessage.style.background = '#f8d7da';
-            gameMessage.style.borderColor = '#f5c6cb';
-            gameMessage.style.color = '#721c24';
-            document.getElementById('revealButton').style.display = 'none';
-            console.log('Game over message shown');
-        }
-        
         function showWinMessage() {
             var sequenceNames = [];
             for (var i = 0; i < gameConfig.sequence.length; i++) {
@@ -965,7 +870,6 @@
             winMessage.style.display = 'block';
             
             document.getElementById('attemptCounter').textContent = 'Completed in ' + currentAttempt + (currentAttempt === 1 ? ' attempt!' : ' attempts!');
-            document.getElementById('revealButton').style.display = 'none';
             console.log('Win message shown');
         }
         
@@ -983,326 +887,56 @@
             console.log('SMS sent');
         }
 
-        // ADMIN FUNCTIONS
-        function openAdmin() {
-            document.getElementById('adminPanel').style.display = 'block';
-            loadAdminData();
-            console.log('Admin panel opened');
-        }
-
-        function closeAdmin() {
-            document.getElementById('adminPanel').style.display = 'none';
-            console.log('Admin panel closed');
-        }
-
-        function loadAdminData() {
-            populateAnchorSelect();
-            loadSequenceBuilder();
-            document.getElementById('smsNumber').value = gameConfig.smsNumber;
-            document.getElementById('logoFile').value = gameConfig.logoFile;
-            console.log('Admin data loaded');
-        }
-
-        function populateAnchorSelect() {
-            var anchorSelect = document.getElementById('anchorSelect');
-            anchorSelect.innerHTML = '<option value="">Choose anchor actor...</option>';
-            
-            var currentAnchor = document.createElement('option');
-            currentAnchor.value = gameConfig.anchor.file;
-            currentAnchor.textContent = gameConfig.anchor.name;
-            currentAnchor.selected = true;
-            anchorSelect.appendChild(currentAnchor);
-            
-            uploadedFiles.forEach(function(fileData, fileName) {
-                if (fileData.type === 'actor' && fileData.file !== gameConfig.anchor.file) {
-                    var option = document.createElement('option');
-                    option.value = fileData.file;
-                    option.textContent = fileData.name;
-                    anchorSelect.appendChild(option);
-                }
-            });
-            console.log('Anchor select populated');
-        }
-
-        function loadSequenceBuilder() {
-            var container = document.getElementById('sequenceSteps');
-            container.innerHTML = '';
-            
-            for (var i = 0; i < gameConfig.sequence.length; i++) {
-                addSequenceStepWithData(gameConfig.sequence[i], i + 2);
-            }
-            console.log('Sequence builder loaded');
-        }
-
-        function addSequenceStep() {
-            var container = document.getElementById('sequenceSteps');
-            var stepNumber = container.children.length + 2;
-            addSequenceStepWithData(null, stepNumber);
-            console.log('Added sequence step', stepNumber);
-        }
-
-        function addSequenceStepWithData(data, stepNumber) {
-            var container = document.getElementById('sequenceSteps');
-            
-            var step = document.createElement('div');
-            step.className = 'sequence-step';
-            
-            var isMovieTile = stepNumber % 2 === 0;
-            var stepColor = isMovieTile ? '#007bff' : '#28a745';
-            
-            var stepNumDiv = document.createElement('div');
-            stepNumDiv.className = 'step-number';
-            stepNumDiv.style.background = stepColor;
-            stepNumDiv.textContent = stepNumber;
-            
-            var stepContent = document.createElement('div');
-            stepContent.className = 'step-content';
-            
-            var nameInput = document.createElement('input');
-            nameInput.type = 'text';
-            nameInput.placeholder = (isMovieTile ? 'Movie' : 'Actor') + ' Name';
-            nameInput.value = data ? data.name : '';
-            nameInput.onchange = function() { 
-                updateSequenceStep(stepNumber - 2, 'name', this.value); 
-            };
-            
-            var fileSelect = document.createElement('select');
-            fileSelect.onchange = function() { 
-                updateSequenceStep(stepNumber - 2, 'file', this.value); 
-            };
-            
-            var defaultOption = document.createElement('option');
-            defaultOption.value = '';
-            defaultOption.textContent = 'Select file...';
-            fileSelect.appendChild(defaultOption);
-            
-            uploadedFiles.forEach(function(fileData, fileName) {
-                var option = document.createElement('option');
-                option.value = fileData.file;
-                option.textContent = fileData.name + ' (' + fileData.type + ')';
-                if (data && data.file === fileData.file) {
-                    option.selected = true;
-                }
-                fileSelect.appendChild(option);
-            });
-            
-            stepContent.appendChild(nameInput);
-            stepContent.appendChild(fileSelect);
-            
-            var removeBtn = document.createElement('button');
-            removeBtn.className = 'remove-file';
-            removeBtn.textContent = 'Remove';
-            removeBtn.onclick = function() { 
-                removeSequenceStep(stepNumber - 2); 
-            };
-            
-            step.appendChild(stepNumDiv);
-            step.appendChild(stepContent);
-            step.appendChild(removeBtn);
-            
-            container.appendChild(step);
-        }
-
-        function updateSequenceStep(index, field, value) {
-            if (!gameConfig.sequence[index]) {
-                gameConfig.sequence[index] = {name: '', file: '', type: ''};
+                
+        function resetDragState() {
+            // Clear all drag states
+            var draggingTiles = document.querySelectorAll('.png-tile.dragging');
+            for (var i = 0; i < draggingTiles.length; i++) {
+                draggingTiles[i].classList.remove('dragging');
+                draggingTiles[i].style.opacity = '1';
             }
             
-            gameConfig.sequence[index][field] = value;
-            
-            var stepNumber = index + 2;
-            gameConfig.sequence[index].type = stepNumber % 2 === 0 ? 'movie' : 'actor';
-            console.log('Updated sequence step', index, field, value);
-        }
-
-        function removeSequenceStep(index) {
-            gameConfig.sequence.splice(index, 1);
-            loadSequenceBuilder();
-            console.log('Removed sequence step', index);
-        }
-
-        function clearSequence() {
-            gameConfig.sequence = [];
-            loadSequenceBuilder();
-            console.log('Sequence cleared');
-        }
-
-        function saveGameConfig() {
-            var anchorSelect = document.getElementById('anchorSelect');
-            if (anchorSelect.value) {
-                var selectedFile = anchorSelect.value;
-                var selectedOption = anchorSelect.selectedOptions[0];
-                gameConfig.anchor = {
-                    name: selectedOption.textContent.split(' (')[0],
-                    file: selectedFile
-                };
+            var dragOverZones = document.querySelectorAll('.drop-zone.drag-over');
+            for (var i = 0; i < dragOverZones.length; i++) {
+                dragOverZones[i].classList.remove('drag-over');
+                dragOverZones[i].style.backgroundColor = '';
+                dragOverZones[i].style.borderColor = '';
             }
             
-            gameConfig.smsNumber = document.getElementById('smsNumber').value;
-            gameConfig.logoFile = document.getElementById('logoFile').value;
+            var enterButton = document.getElementById('enterButton');
+            enterButton.style.display = 'none';
+            enterButton.textContent = 'Enter';
+            enterButton.style.backgroundColor = '#007bff';
             
-            document.getElementById('gameLogo').src = gameConfig.logoFile;
-            
-            initializeGame();
-            
-            alert('Game updated successfully!');
-            closeAdmin();
-            console.log('Game config saved');
+            draggedTile = null;
+            console.log('Drag state reset');
         }
 
-        function exportGame() {
-            var configJSON = JSON.stringify(gameConfig, null, 2);
-            var content = 'Game Configuration:\n\n' + configJSON;
-            
-            var blob = new Blob([content], { type: 'text/plain' });
-            var url = URL.createObjectURL(blob);
-            var a = document.createElement('a');
-            a.href = url;
-            a.download = 'game-config.json';
-            a.style.display = 'none';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            
-            alert('Configuration exported successfully!');
-            console.log('Game config exported');
-        }
-
-        function setupFileUpload() {
-            var fileUploadZone = document.getElementById('fileUploadZone');
-            var fileInput = document.getElementById('fileInput');
-
-            fileUploadZone.addEventListener('click', function() {
-                fileInput.click();
-            });
-
-            fileUploadZone.addEventListener('dragover', function(e) {
-                e.preventDefault();
-                fileUploadZone.classList.add('dragover');
-            });
-
-            fileUploadZone.addEventListener('dragleave', function() {
-                fileUploadZone.classList.remove('dragover');
-            });
-
-            fileUploadZone.addEventListener('drop', function(e) {
-                e.preventDefault();
-                fileUploadZone.classList.remove('dragover');
-                handleFiles(e.dataTransfer.files);
-            });
-
-            fileInput.addEventListener('change', function(e) {
-                handleFiles(e.target.files);
-            });
-            console.log('File upload setup');
-        }
-
-        function handleFiles(files) {
-            for (var i = 0; i < files.length; i++) {
-                var file = files[i];
-                if (file.type === 'image/png') {
-                    var reader = new FileReader();
-                    reader.onload = function(e) {
-                        var fileName = file.name.replace('.png', '');
-                        var cleanName = fileName.replace(/_/g, ' ').replace(/\b\w/g, function(l) { 
-                            return l.toUpperCase(); 
-                        });
-                        
-                        var type = fileName.toLowerCase().includes('actor') || 
-                                  (fileName.includes('_') && !fileName.toLowerCase().includes('movie')) ? 'actor' : 'movie';
-                        
-                        var fileData = {
-                            name: cleanName,
-                            file: type + 's/' + file.name,
-                            type: type,
-                            blob: e.target.result
-                        };
-                        
-                        uploadedFiles.set(file.name, fileData);
-                        displayUploadedFiles();
-                        populateAnchorSelect();
-                    };
-                    reader.readAsDataURL(file);
-                }
+        // Add this to the window to handle any drag interruptions
+        window.addEventListener('dragend', function(e) {
+            if (e.target.classList.contains('png-tile')) {
+                setTimeout(function() {
+                    if (!document.querySelector('.drop-zone.drag-over')) {
+                        resetDragState();
+                    }
+                }, 100);
             }
-            console.log('Files handled:', files.length);
-        }
+        });
 
-        function displayUploadedFiles() {
-            var container = document.getElementById('uploadedFiles');
-            var filesList = document.getElementById('filesList');
-            
-            if (uploadedFiles.size === 0) {
-                container.style.display = 'none';
-                return;
-            }
-            
-            container.style.display = 'block';
-            filesList.innerHTML = '';
-            
-            uploadedFiles.forEach(function(fileData, fileName) {
-                var fileItem = document.createElement('div');
-                fileItem.className = 'file-item';
-                
-                var img = document.createElement('img');
-                img.src = fileData.blob;
-                img.className = 'file-preview';
-                img.alt = fileData.name;
-                
-                var fileInfo = document.createElement('div');
-                fileInfo.className = 'file-info';
-                
-                var fileNameDiv = document.createElement('div');
-                fileNameDiv.className = 'file-name';
-                fileNameDiv.textContent = fileData.name;
-                
-                var fileTypeDiv = document.createElement('div');
-                fileTypeDiv.className = 'file-type';
-                fileTypeDiv.textContent = fileData.type.toUpperCase() + ' • ' + fileName;
-                
-                fileInfo.appendChild(fileNameDiv);
-                fileInfo.appendChild(fileTypeDiv);
-                
-                var removeBtn = document.createElement('button');
-                removeBtn.className = 'remove-file';
-                removeBtn.textContent = 'Remove';
-                removeBtn.onclick = function() { 
-                    removeUploadedFile(fileName); 
-                };
-                
-                fileItem.appendChild(img);
-                fileItem.appendChild(fileInfo);
-                fileItem.appendChild(removeBtn);
-                
-                filesList.appendChild(fileItem);
-            });
-            console.log('Uploaded files displayed');
-        }
-
-        function removeUploadedFile(fileName) {
-            uploadedFiles.delete(fileName);
-            displayUploadedFiles();
-            populateAnchorSelect();
-            console.log('Removed uploaded file', fileName);
-        }
+        // Handle window resize to update grid size
+        window.addEventListener('resize', function() {
+            updateGridSize();
+        });
 
         // Initialize everything
         window.addEventListener('load', function() {
             try {
-                var urlParams = new URLSearchParams(window.location.search);
-                if (urlParams.get('admin') === 'true') {
-                    openAdmin();
-                }
-                
-                setupFileUpload();
                 initializeGame();
                 
                 console.log('Game initialized successfully');
             } catch (error) {
                 console.error('Error initializing game:', error);
             }
-            console.log('Script execution completed'); // Final debug log
         });
     </script>
 </body>
