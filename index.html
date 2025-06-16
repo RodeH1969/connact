@@ -714,13 +714,15 @@
         }
 
         function clearMobileSelection() {
-            // Clear any previously selected PNG tiles
+            // ONLY clear PNG selection state - DO NOT touch placed images on circles
+            
+            // Clear any previously selected PNG tiles (visual state only)
             var pngTiles = document.querySelectorAll('.png-tile');
             for (var i = 0; i < pngTiles.length; i++) {
                 pngTiles[i].classList.remove('mobile-selected');
             }
             
-            // Clear pulsing circles
+            // Clear pulsing circles (visual state only)
             var circles = document.querySelectorAll('.circle-drop-zone');
             for (var i = 0; i < circles.length; i++) {
                 circles[i].classList.remove('mobile-pulse');
@@ -730,7 +732,10 @@
             var instruction = document.getElementById('mobileInstruction');
             instruction.style.display = 'none';
             
+            // Clear selection variable
             selectedTile = null;
+            
+            console.log('Mobile: Selection cleared - placed images preserved');
         }
 
         function validateMove(imageSrc, dropZoneId, position) {
@@ -807,9 +812,12 @@
         }
 
         function incrementAttempt() {
+            // ONLY increment attempt counter - DO NOT clear any placed images
+            
             if (currentAttempt < maxAttempts) {
                 currentAttempt++;
                 document.getElementById('attemptCounter').textContent = 'Attempt ' + currentAttempt + ' of ' + maxAttempts;
+                console.log('Mobile: Attempt incremented to', currentAttempt, '- placed images preserved');
             } else {
                 // Game over
                 var instruction = document.getElementById('mobileInstruction');
@@ -817,6 +825,7 @@
                 instruction.style.background = '#dc3545';
                 instruction.style.display = 'block';
                 gameWon = true; // Prevent further interactions
+                console.log('Mobile: Game over - no more attempts');
             }
         }
 
@@ -862,7 +871,7 @@
                             return;
                         }
                         
-                        // Immediate placement and validation
+                        // Get move data
                         var imageSrc = selectedTile.getAttribute('data-src');
                         var imageName = selectedTile.getAttribute('data-name');
                         var dropZoneId = this.id;
@@ -874,19 +883,31 @@
                         var isCorrect = validateMove(imageSrc, dropZoneId, position);
                         
                         if (isCorrect) {
-                            // Correct - place image and remove from PNG area
+                            // CORRECT MOVE: Place image permanently and remove from PNG area
                             placeImageInCircle(this, imageSrc, imageName);
                             selectedTile.parentNode.removeChild(selectedTile);
                             showMobileFeedback(true, imageName);
+                            
+                            // Clear selection state only (don't touch placed images)
+                            clearMobileSelection();
+                            
                             checkIfAllTilesFilled();
+                            console.log('✅ Mobile: Correct placement - image permanently placed');
                         } else {
-                            // Wrong - show feedback and use attempt
+                            // INCORRECT MOVE: Only clear selection, leave all placed images alone
+                            console.log('❌ Mobile: Incorrect placement - clearing selection only');
+                            
+                            // Show error feedback
                             showMobileFeedback(false, imageName);
+                            
+                            // Increment attempt counter
                             incrementAttempt();
+                            
+                            // Clear selection state only (selectedTile returns to PNG area automatically)
+                            clearMobileSelection();
+                            
+                            // DO NOT touch any placed images - they should remain on the board
                         }
-                        
-                        // Clear selection and reset
-                        clearMobileSelection();
                     });
                 }
                 
