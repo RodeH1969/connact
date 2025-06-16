@@ -139,11 +139,12 @@
 
         .png-grid {
             display: grid;
-            grid-template-columns: repeat(3, 50px);
-            grid-template-rows: repeat(5, 50px);
+            grid-template-columns: repeat(8, 50px);
+            grid-template-rows: repeat(2, 50px);
             gap: 5px;
-            max-width: 165px;
+            max-width: 100%;
             margin-top: 10px;
+            justify-content: center;
         }
 
         .png-tile {
@@ -381,6 +382,7 @@
         // Touch support variables
         var touchedTile = null;
         var isDragging = false;
+        var isMobile = false;
 
         // Initialize game
         function initializeGame() {
@@ -527,102 +529,72 @@
 
         function attachEventListeners() {
             var imageElements = document.querySelectorAll('.png-tile');
+            
+            // Detect if mobile
+            isMobile = window.innerWidth <= 768 || 'ontouchstart' in window;
 
             for (var i = 0; i < imageElements.length; i++) {
-                // Desktop drag events
-                imageElements[i].addEventListener('dragstart', function(e) {
-                    if (gameWon || revealInProgress) return;
-                    
-                    draggedTile = this;
-                    var imgSrc = this.getAttribute('data-src');
-                    var imgName = this.getAttribute('data-name');
-                    e.dataTransfer.setData('text/plain', imgSrc);
-                    e.dataTransfer.setData('text/name', imgName);
-                    e.dataTransfer.effectAllowed = 'move';
-                    this.classList.add('dragging');
-                    console.log('Drag started on', imgName);
-                });
-
-                imageElements[i].addEventListener('dragend', function(e) {
-                    this.classList.remove('dragging');
-                    console.log('Drag ended');
-                });
-
-                // Mobile touch events
-                imageElements[i].addEventListener('touchstart', function(e) {
-                    if (gameWon || revealInProgress) return;
-                    e.preventDefault();
-                    
-                    touchedTile = this;
-                    isDragging = true;
-                    this.classList.add('dragging');
-                    
-                    var imgName = this.getAttribute('data-name');
-                    console.log('Touch started on', imgName);
-                });
-
-                imageElements[i].addEventListener('touchmove', function(e) {
-                    if (!isDragging || !touchedTile) return;
-                    e.preventDefault();
-                    
-                    var touch = e.touches[0];
-                    var elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
-                    
-                    // Remove drag-over from all drop zones
-                    var allZones = document.querySelectorAll('.drop-zone');
-                    for (var j = 0; j < allZones.length; j++) {
-                        allZones[j].classList.remove('drag-over');
-                    }
-                    
-                    // Add drag-over to current drop zone
-                    if (elementBelow && elementBelow.classList.contains('drop-zone')) {
-                        elementBelow.classList.add('drag-over');
-                        document.getElementById('enterButton').style.display = 'block';
-                    } else {
-                        document.getElementById('enterButton').style.display = 'none';
-                    }
-                });
-
-                imageElements[i].addEventListener('touchend', function(e) {
-                    if (!isDragging || !touchedTile) return;
-                    e.preventDefault();
-                    
-                    var touch = e.changedTouches[0];
-                    var elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
-                    
-                    this.classList.remove('dragging');
-                    
-                    if (elementBelow && elementBelow.classList.contains('drop-zone')) {
-                        var imageSrc = touchedTile.getAttribute('data-src');
-                        var imageName = touchedTile.getAttribute('data-name');
+                if (isMobile) {
+                    // Mobile: Simple tap to place
+                    imageElements[i].addEventListener('touchstart', function(e) {
+                        if (gameWon || revealInProgress) return;
+                        e.preventDefault();
                         
-                        if (!elementBelow.querySelector('img')) {
-                            // Set up for submission
-                            draggedTile = touchedTile;
-                            touchedTile.style.opacity = '0.3';
-                            elementBelow.style.backgroundColor = '#fff3cd';
-                            elementBelow.style.borderColor = '#ffc107';
-                            elementBelow.classList.add('drag-over');
+                        var imageSrc = this.getAttribute('data-src');
+                        var imageName = this.getAttribute('data-name');
+                        
+                        // Find next empty drop zone
+                        var nextDropZone = findNextEmptyDropZone();
+                        if (nextDropZone) {
+                            draggedTile = this;
+                            this.style.opacity = '0.3';
+                            nextDropZone.style.backgroundColor = '#fff3cd';
+                            nextDropZone.style.borderColor = '#ffc107';
+                            nextDropZone.classList.add('drag-over');
                             
                             var enterButton = document.getElementById('enterButton');
                             enterButton.style.display = 'block';
                             enterButton.style.backgroundColor = '#28a745';
                             enterButton.textContent = 'Submit "' + imageName + '"';
                             
-                            console.log('Touch ready to submit:', imageName, 'to', elementBelow.id);
+                            console.log('Mobile tap - ready to submit:', imageName, 'to', nextDropZone.id);
                         }
-                    } else {
-                        // Reset if not dropped on valid zone
-                        resetDragState();
-                    }
-                    
-                    touchedTile = null;
-                    isDragging = false;
-                });
+                    });
+                } else {
+                    // Desktop: Drag and drop
+                    imageElements[i].addEventListener('dragstart', function(e) {
+                        if (gameWon || revealInProgress) return;
+                        
+                        draggedTile = this;
+                        var imgSrc = this.getAttribute('data-src');
+                        var imgName = this.getAttribute('data-name');
+                        e.dataTransfer.setData('text/plain', imgSrc);
+                        e.dataTransfer.setData('text/name', imgName);
+                        e.dataTransfer.effectAllowed = 'move';
+                        this.classList.add('dragging');
+                        console.log('Drag started on', imgName);
+                    });
+
+                    imageElements[i].addEventListener('dragend', function(e) {
+                        this.classList.remove('dragging');
+                        console.log('Drag ended');
+                    });
+                }
             }
 
             // Attach listeners to existing drop zones
             attachDropZoneListeners();
+        }
+
+        function findNextEmptyDropZone() {
+            // Find the first empty drop zone in order
+            var dropZones = document.querySelectorAll('.drop-zone');
+            for (var i = 0; i < dropZones.length; i++) {
+                if (!dropZones[i].querySelector('img')) {
+                    return dropZones[i];
+                }
+            }
+            return null;
         }
 
         function attachDropZoneListeners() {
