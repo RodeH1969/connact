@@ -37,17 +37,20 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 120px;
-            height: 120px;
+            width: 160px;
+            height: 160px;
             z-index: 1;
+            background-color: #f5f5f5;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .center-logo img {
-            width: 100%;
-            height: 100%;
+            width: 140px;
+            height: 140px;
             object-fit: contain;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
 
         .circle-tile, .circle-drop-zone {
@@ -268,8 +271,13 @@
             }
 
             .center-logo {
-                width: 90px;
-                height: 90px;
+                width: 120px;
+                height: 120px;
+            }
+
+            .center-logo img {
+                width: 100px;
+                height: 100px;
             }
 
             .circle-tile, .circle-drop-zone {
@@ -368,11 +376,13 @@
         var draggedTile = null;
         var pngTiles = [];
         var isMobile = false;
+        var selectedTile = null; // For mobile two-tap system
 
         function initializeGame() {
             gameWon = false;
             placedImages.clear();
             draggedTile = null;
+            selectedTile = null; // Clear mobile selection
             
             generateCorrectAnswers();
             createCircularLayout();
@@ -531,30 +541,22 @@
 
             for (var i = 0; i < imageElements.length; i++) {
                 if (isMobile) {
-                    // Mobile: Simple tap to place
+                    // Mobile: Two-tap system - first tap selects tile
                     imageElements[i].addEventListener('touchstart', function(e) {
                         if (gameWon) return;
                         e.preventDefault();
                         
-                        var imageSrc = this.getAttribute('data-src');
-                        var imageName = this.getAttribute('data-name');
+                        // Clear any previous selection
+                        clearMobileSelection();
                         
-                        // Find a valid drop zone for this image
-                        var validDropZone = findValidDropZone(imageSrc);
-                        if (validDropZone) {
-                            draggedTile = this;
-                            this.style.opacity = '0.3';
-                            validDropZone.style.backgroundColor = '#fff3cd';
-                            validDropZone.style.borderColor = '#ffc107';
-                            validDropZone.classList.add('drag-over');
-                            
-                            var enterButton = document.getElementById('enterButton');
-                            enterButton.style.display = 'block';
-                            enterButton.style.backgroundColor = '#28a745';
-                            enterButton.textContent = 'Submit "' + imageName + '"';
-                            
-                            console.log('Mobile tap - ready to submit:', imageName, 'to', validDropZone.id);
-                        }
+                        // Select this tile
+                        selectedTile = this;
+                        this.style.opacity = '0.7';
+                        this.style.borderColor = '#28a745';
+                        this.style.borderWidth = '3px';
+                        
+                        var imageName = this.getAttribute('data-name');
+                        console.log('Mobile: Selected tile:', imageName, '- Now tap any empty circle to place');
                     });
                 } else {
                     // Desktop: Drag and drop
@@ -582,6 +584,17 @@
             attachDropZoneListeners();
         }
 
+        function clearMobileSelection() {
+            // Clear any previously selected PNG tiles
+            var pngTiles = document.querySelectorAll('.png-tile');
+            for (var i = 0; i < pngTiles.length; i++) {
+                pngTiles[i].style.opacity = '1';
+                pngTiles[i].style.borderColor = '#ccc';
+                pngTiles[i].style.borderWidth = '2px';
+            }
+            selectedTile = null;
+        }
+
         function findValidDropZone(imageSrc) {
             // Find a drop zone that accepts this image and is empty
             for (var pos = 2; pos <= 16; pos++) {
@@ -603,7 +616,35 @@
                 var newDropZone = dropZones[i].cloneNode(true);
                 dropZones[i].parentNode.replaceChild(newDropZone, dropZones[i]);
                 
-                // Add fresh event listeners
+                if (isMobile) {
+                    // Mobile: Second tap on circle to place selected tile
+                    newDropZone.addEventListener('touchstart', function(e) {
+                        if (gameWon || !selectedTile) return;
+                        e.preventDefault();
+                        
+                        // Don't allow placement on filled circles
+                        if (this.querySelector('img')) {
+                            console.log('Mobile: Circle already filled');
+                            return;
+                        }
+                        
+                        // Set up for submission
+                        draggedTile = selectedTile;
+                        this.classList.add('drag-over');
+                        this.style.backgroundColor = '#fff3cd';
+                        this.style.borderColor = '#ffc107';
+                        
+                        var imageName = selectedTile.getAttribute('data-name');
+                        var enterButton = document.getElementById('enterButton');
+                        enterButton.style.display = 'block';
+                        enterButton.style.backgroundColor = '#28a745';
+                        enterButton.textContent = 'Submit "' + imageName + '"';
+                        
+                        console.log('Mobile: Ready to submit:', imageName, 'to', this.id);
+                    });
+                }
+                
+                // Desktop drag and drop listeners
                 newDropZone.addEventListener('dragover', function(e) {
                     if (gameWon) return;
                     e.preventDefault();
@@ -685,6 +726,7 @@
                 placeImageInCircle(dropZone, imageSrc, imageName);
                 draggedTile.parentNode.removeChild(draggedTile);
                 draggedTile = null;
+                selectedTile = null; // Clear mobile selection
                 
                 // Clear visual feedback
                 dropZone.classList.remove('drag-over', 'start-option');
@@ -700,7 +742,12 @@
                 dropZone.classList.remove('drag-over');
                 dropZone.style.backgroundColor = '';
                 dropZone.style.borderColor = '';
-                draggedTile.style.opacity = '1';
+                
+                if (isMobile) {
+                    clearMobileSelection(); // Reset mobile selection
+                } else {
+                    draggedTile.style.opacity = '1';
+                }
                 
                 var remainingAttempts = maxAttempts - currentAttempt;
                 document.getElementById('gameMessage').innerHTML = '❌ Wrong! You have ' + remainingAttempts + ' attempts remaining.';
@@ -711,6 +758,7 @@
                 
                 document.getElementById('enterButton').style.display = 'none';
                 draggedTile = null;
+                selectedTile = null; // Clear mobile selection
                 
                 if (currentAttempt < maxAttempts) {
                     currentAttempt++;
@@ -812,6 +860,12 @@
             enterButton.style.backgroundColor = '#007bff';
             
             draggedTile = null;
+            
+            // Clear mobile selections
+            if (isMobile) {
+                clearMobileSelection();
+            }
+            
             console.log('Drag state reset');
         }
 
