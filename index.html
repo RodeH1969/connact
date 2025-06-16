@@ -114,10 +114,15 @@
             width: 200px;
             height: 200px;
             margin: 0 auto 15px auto;
+            position: relative;
+            z-index: 1;
         }
 
-        .final-jason-tile {
-            display: none; /* Not needed in rectangular layout */
+        .grid-placeholder {
+            background: transparent;
+            border: 1px dashed #ddd;
+            border-radius: 4px;
+            opacity: 0.3;
         }
 
         .png-grid {
@@ -128,6 +133,9 @@
             max-width: 100%;
             margin-top: 10px;
             justify-content: center;
+            position: relative;
+            z-index: 2;
+            clear: both;
         }
 
         .png-tile {
@@ -401,26 +409,30 @@
             correctAnswers = {};
             
             // Position 1 is always Jason (anchor)
-            // Positions 2 and 16 are the two starting options from Jason
-            correctAnswers['dropTile2'] = gameConfig.sequence[0].file; // Identity Thief (clockwise)
-            correctAnswers['dropTile16'] = gameConfig.sequence[14].file; // Couples Retreat (counterclockwise)
+            // Position 2: Identity Thief (clockwise start)
+            // Position 13: Couples Retreat (counterclockwise start)
+            correctAnswers['dropTile2'] = gameConfig.sequence[0].file; // Identity Thief
+            correctAnswers['dropTile13'] = gameConfig.sequence[14].file; // Couples Retreat
             
-            // Generate answers for both directions
-            for (var i = 1; i < gameConfig.sequence.length - 1; i++) {
-                // Clockwise path: positions 3, 4, 5, etc.
-                correctAnswers['dropTile' + (i + 2)] = gameConfig.sequence[i].file;
-                
-                // Counterclockwise path: positions 15, 14, 13, etc.
-                correctAnswers['dropTile' + (16 - i)] = gameConfig.sequence[14 - i].file;
+            // Map all sequence items to their rectangular positions
+            // Clockwise path: 2→3→4→5→8→12→16→15→14→13
+            // Counterclockwise path: 13→14→15→16→12→8→5→4→3→2
+            
+            var clockwisePositions = [2, 3, 4, 5, 8, 12, 16, 15, 14, 13];
+            var counterclockwisePositions = [13, 14, 15, 16, 12, 8, 5, 4, 3, 2];
+            
+            // Generate answers for both paths
+            for (var i = 0; i < gameConfig.sequence.length; i++) {
+                if (i < clockwisePositions.length) {
+                    correctAnswers['dropTile' + clockwisePositions[i]] = gameConfig.sequence[i].file;
+                }
             }
             
             console.log('=== BIDIRECTIONAL ANSWERS MAPPING ===');
             console.log('Jason at position 1');
             console.log('Clockwise start - Position 2:', gameConfig.sequence[0].name);
-            console.log('Counterclockwise start - Position 16:', gameConfig.sequence[14].name);
-            for (var pos in correctAnswers) {
-                console.log(pos + ':', correctAnswers[pos]);
-            }
+            console.log('Counterclockwise start - Position 13:', gameConfig.sequence[14].name);
+            console.log('All mapped positions:', Object.keys(correctAnswers));
             console.log('=====================================');
         }
 
@@ -454,55 +466,69 @@
             var sequenceGrid = document.getElementById('sequenceGrid');
             sequenceGrid.innerHTML = '';
 
-            // Create 4x4 grid (16 positions)
-            for (var pos = 1; pos <= 16; pos++) {
-                if (pos === 1) {
-                    // Jason at position 1 (top-left corner)
-                    var anchorTile = document.createElement('div');
-                    anchorTile.className = 'tile';
-                    anchorTile.style.gridArea = '1 / 1';
-                    anchorTile.setAttribute('data-src', gameConfig.anchor.file);
-                    anchorTile.setAttribute('data-name', gameConfig.anchor.name);
-
-                    var img = document.createElement('img');
-                    img.src = gameConfig.anchor.file;
-                    img.alt = gameConfig.anchor.name;
-                    img.onerror = function() {
-                        anchorTile.innerHTML = '<div style="padding:2px; text-align:center; color:#999; font-size:6px;">' + gameConfig.anchor.name + '</div>';
-                    };
-
-                    anchorTile.appendChild(img);
-                    sequenceGrid.appendChild(anchorTile);
+            // Create complete 4x4 grid structure
+            for (var row = 1; row <= 4; row++) {
+                for (var col = 1; col <= 4; col++) {
+                    var pos = (row - 1) * 4 + col; // Convert row/col to position 1-16
                     
-                } else if (pos === 2) {
-                    // First starting option: Identity Thief (clockwise)
-                    var dropZone = document.createElement('div');
-                    dropZone.className = 'drop-zone';
-                    dropZone.id = 'dropTile2';
-                    dropZone.style.gridArea = '1 / 2';
-                    dropZone.innerHTML = '<span style="color: #007bff; font-weight: bold;">Movie</span>';
-                    sequenceGrid.appendChild(dropZone);
-                    
-                } else if (pos === 16) {
-                    // Second starting option: Couples Retreat (counterclockwise)  
-                    var dropZone = document.createElement('div');
-                    dropZone.className = 'drop-zone';
-                    dropZone.id = 'dropTile16';
-                    dropZone.style.gridArea = '4 / 1';
-                    dropZone.innerHTML = '<span style="color: #007bff; font-weight: bold;">Movie</span>';
-                    sequenceGrid.appendChild(dropZone);
+                    if (pos === 1) {
+                        // Jason at position 1 (top-left corner)
+                        var anchorTile = document.createElement('div');
+                        anchorTile.className = 'tile';
+                        anchorTile.style.gridArea = row + ' / ' + col;
+                        anchorTile.setAttribute('data-src', gameConfig.anchor.file);
+                        anchorTile.setAttribute('data-name', gameConfig.anchor.name);
+
+                        var img = document.createElement('img');
+                        img.src = gameConfig.anchor.file;
+                        img.alt = gameConfig.anchor.name;
+                        img.onerror = function() {
+                            anchorTile.innerHTML = '<div style="padding:2px; text-align:center; color:#999; font-size:6px;">' + gameConfig.anchor.name + '</div>';
+                        };
+
+                        anchorTile.appendChild(img);
+                        sequenceGrid.appendChild(anchorTile);
+                        
+                    } else if (pos === 2) {
+                        // First starting option: Identity Thief (clockwise)
+                        var dropZone = document.createElement('div');
+                        dropZone.className = 'drop-zone';
+                        dropZone.id = 'dropTile2';
+                        dropZone.style.gridArea = row + ' / ' + col;
+                        dropZone.innerHTML = '<span style="color: #007bff; font-weight: bold; font-size: 8px;">Movie</span>';
+                        sequenceGrid.appendChild(dropZone);
+                        
+                    } else if (pos === 13) {
+                        // Second starting option: Couples Retreat (counterclockwise)  
+                        var dropZone = document.createElement('div');
+                        dropZone.className = 'drop-zone';
+                        dropZone.id = 'dropTile13';
+                        dropZone.style.gridArea = row + ' / ' + col;
+                        dropZone.innerHTML = '<span style="color: #007bff; font-weight: bold; font-size: 8px;">Movie</span>';
+                        sequenceGrid.appendChild(dropZone);
+                        
+                    } else if (pos === 2 || pos === 3 || pos === 4 || pos === 5 || pos === 8 || pos === 9 || pos === 12 || pos === 13 || pos === 14 || pos === 15 || pos === 16) {
+                        // Create placeholder for circuit positions (initially hidden)
+                        var placeholder = document.createElement('div');
+                        placeholder.className = 'grid-placeholder';
+                        placeholder.id = 'placeholder' + pos;
+                        placeholder.style.gridArea = row + ' / ' + col;
+                        placeholder.style.width = '100%';
+                        placeholder.style.height = '100%';
+                        placeholder.style.border = '1px dashed #ddd';
+                        placeholder.style.borderRadius = '4px';
+                        placeholder.style.opacity = '0.3';
+                        sequenceGrid.appendChild(placeholder);
+                    }
                 }
             }
-
-            // Update grid size
-            updateGridSize();
             
-            console.log('=== INITIAL RECTANGULAR SETUP ===');
+            console.log('=== RECTANGULAR GRID SETUP ===');
             console.log('Jason at position 1');
             console.log('Starting options:');
             console.log('  Position 2 (clockwise):', gameConfig.sequence[0].name);
-            console.log('  Position 16 (counterclockwise):', gameConfig.sequence[14].name);
-            console.log('==================================');
+            console.log('  Position 13 (counterclockwise):', gameConfig.sequence[14].name);
+            console.log('==============================');
         }
 
         function createPngGrid() {
@@ -610,13 +636,13 @@
             if (playerPath.length === 0) {
                 // First move: player can choose either starting position
                 var dropZone2 = document.getElementById('dropTile2');
-                var dropZone16 = document.getElementById('dropTile16');
+                var dropZone13 = document.getElementById('dropTile13');
                 
                 if (dropZone2 && !dropZone2.querySelector('img')) {
                     return dropZone2;
                 }
-                if (dropZone16 && !dropZone16.querySelector('img')) {
-                    return dropZone16;
+                if (dropZone13 && !dropZone13.querySelector('img')) {
+                    return dropZone13;
                 }
             } else {
                 // Subsequent moves: find next in chosen path
@@ -737,7 +763,7 @@
                     if (dropZone.id === 'dropTile2') {
                         pathDirection = 'clockwise';
                         console.log('🔄 Player chose CLOCKWISE path');
-                    } else if (dropZone.id === 'dropTile16') {
+                    } else if (dropZone.id === 'dropTile13') {
                         pathDirection = 'counterclockwise';
                         console.log('🔄 Player chose COUNTERCLOCKWISE path');
                     }
@@ -782,22 +808,32 @@
         function addNextTileInPath() {
             if (!pathDirection || playerPath.length >= 15) return;
             
+            // Define the path positions around the rectangle
+            var clockwisePositions = [2, 3, 4, 5, 8, 12, 16, 15, 14, 13];
+            var counterclockwisePositions = [13, 14, 15, 16, 12, 8, 5, 4, 3, 2];
+            
             var nextPosition;
             var sequenceIndex;
             
             if (pathDirection === 'clockwise') {
-                nextPosition = playerPath.length + 2; // 2, 3, 4, 5, etc.
-                sequenceIndex = playerPath.length; // 0, 1, 2, 3, etc.
-                if (nextPosition > 16) return;
+                if (playerPath.length >= clockwisePositions.length) return;
+                nextPosition = clockwisePositions[playerPath.length];
+                sequenceIndex = playerPath.length;
             } else {
-                nextPosition = 16 - playerPath.length; // 16, 15, 14, 13, etc.
-                sequenceIndex = 14 - playerPath.length; // 14, 13, 12, 11, etc.
-                if (nextPosition < 1) return;
+                if (playerPath.length >= counterclockwisePositions.length) return;
+                nextPosition = counterclockwisePositions[playerPath.length];
+                sequenceIndex = 14 - playerPath.length;
             }
             
             // Calculate grid position (1-16 to row/col in 4x4 grid)
             var row = Math.ceil(nextPosition / 4);
             var col = ((nextPosition - 1) % 4) + 1;
+            
+            // Remove placeholder and create drop zone
+            var placeholder = document.getElementById('placeholder' + nextPosition);
+            if (placeholder) {
+                placeholder.remove();
+            }
             
             var sequenceGrid = document.getElementById('sequenceGrid');
             var newDropZone = document.createElement('div');
@@ -807,11 +843,14 @@
             
             // Determine if it's movie or actor based on sequence
             var expectedItem = gameConfig.sequence[sequenceIndex];
-            var isMovieTile = expectedItem.type === 'movie';
-            var color = isMovieTile ? '#007bff' : '#28a745';
-            var label = isMovieTile ? 'Movie' : 'Actor';
+            if (expectedItem) {
+                var isMovieTile = expectedItem.type === 'movie';
+                var color = isMovieTile ? '#007bff' : '#28a745';
+                var label = isMovieTile ? 'Movie' : 'Actor';
+                
+                newDropZone.innerHTML = '<span style="color: ' + color + '; font-weight: bold; font-size: 8px;">' + label + '</span>';
+            }
             
-            newDropZone.innerHTML = '<span style="color: ' + color + '; font-weight: bold;">' + label + '</span>';
             sequenceGrid.appendChild(newDropZone);
             
             // Reattach listeners
@@ -820,7 +859,7 @@
             console.log('=== ADDED NEXT TILE ===');
             console.log('Direction:', pathDirection);
             console.log('Position:', nextPosition, '(Row ' + row + ', Col ' + col + ')');
-            console.log('Expected:', expectedItem.name, '(' + expectedItem.type + ')');
+            console.log('Expected:', expectedItem ? expectedItem.name : 'unknown');
             console.log('======================');
         }
 
