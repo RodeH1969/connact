@@ -106,35 +106,18 @@
 
         .sequence-grid {
             display: grid;
-            grid-template-columns: repeat(4, 100px);
-            grid-template-rows: repeat(1, 100px);
-            gap: 5px;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            gap: 3px;
             justify-content: center;
-            margin-bottom: 10px;
-            position: relative; /* For absolute positioning of Jason */
+            margin-bottom: 15px;
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 15px auto;
         }
 
         .final-jason-tile {
-            position: absolute;
-            width: 100px;
-            height: 100px;
-            left: -110px; /* 100px width + 10px gap to the left of grid */
-            top: 315px; /* Row 4 position: (3 rows * 100px) + (3 gaps * 5px) = 315px */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 4px solid #000;
-            box-sizing: border-box;
-            border-radius: 8px;
-            background-color: #fff;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .final-jason-tile img {
-            width: 92px;
-            height: 92px;
-            object-fit: cover;
-            border-radius: 4px;
+            display: none; /* Not needed in rectangular layout */
         }
 
         .png-grid {
@@ -373,7 +356,17 @@
         var revealInProgress = false;
         var correctAnswers = {};
         var placedImages = new Map();
-        var sequencePositions = [1, 2, 3, 4, 8, 7, 6, 5, 9, 10, 11, 12, 16, 15, 14, 13]; // Zigzag order
+        var sequencePositions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]; // Rectangular circuit
+        var rectangularLayout = [
+            [1,  2,  3,  4 ],  // Top row
+            [16, 0,  0,  5 ],  // Middle rows (0 = empty)
+            [15, 0,  0,  6 ],  
+            [14, 13, 12, 11]   // Bottom row: ... ← 11 ← 10 ← 9 ← 8 ← 7
+        ];
+        var validPaths = {
+            clockwise: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], // Jason → Identity → ...
+            counterclockwise: [16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2] // Jason → Couples → ...
+        };
         var currentPosition = 2;
         var draggedTile = null;
         var pngTiles = [];
@@ -386,37 +379,49 @@
 
         // Initialize game
         function initializeGame() {
-            currentPosition = 2; // Reset to 2 since we have anchor (1) and first drop zone (2)
+            currentPosition = 1; // Start at Jason position
             gameWon = false;
             revealInProgress = false;
             placedImages.clear();
             draggedTile = null;
-            finalJasonAdded = false; // Reset the final Jason flag
+            finalJasonAdded = false;
+            
+            // Reset path tracking
+            playerPath = [];
+            pathDirection = null;
             
             generateCorrectAnswers();
             createInitialSequence();
             createPngGrid();
             attachEventListeners();
-            console.log('Game initialized');
+            console.log('Rectangular circuit game initialized');
         }
 
         function generateCorrectAnswers() {
             correctAnswers = {};
-            for (var i = 0; i < gameConfig.sequence.length; i++) {
-                var pos = sequencePositions[i + 1]; // Start from position 2 (sequencePositions[1])
-                correctAnswers['dropTile' + pos] = gameConfig.sequence[i].file;
+            
+            // Position 1 is always Jason (anchor)
+            // Positions 2 and 16 are the two starting options from Jason
+            correctAnswers['dropTile2'] = gameConfig.sequence[0].file; // Identity Thief (clockwise)
+            correctAnswers['dropTile16'] = gameConfig.sequence[14].file; // Couples Retreat (counterclockwise)
+            
+            // Generate answers for both directions
+            for (var i = 1; i < gameConfig.sequence.length - 1; i++) {
+                // Clockwise path: positions 3, 4, 5, etc.
+                correctAnswers['dropTile' + (i + 2)] = gameConfig.sequence[i].file;
+                
+                // Counterclockwise path: positions 15, 14, 13, etc.
+                correctAnswers['dropTile' + (16 - i)] = gameConfig.sequence[14 - i].file;
             }
             
-            // Debug: Log the correct answers mapping
-            console.log('=== CORRECT ANSWERS MAPPING ===');
-            console.log('Anchor at position 1:', gameConfig.anchor.name, '→', gameConfig.anchor.file);
-            for (var i = 0; i < gameConfig.sequence.length; i++) {
-                var pos = sequencePositions[i + 1];
-                var item = gameConfig.sequence[i];
-                console.log('dropTile' + pos + ':', item.name, '(' + item.type + ')', '→', item.file);
-                console.log('  Sequence index:', i, '| Grid position:', pos);
+            console.log('=== BIDIRECTIONAL ANSWERS MAPPING ===');
+            console.log('Jason at position 1');
+            console.log('Clockwise start - Position 2:', gameConfig.sequence[0].name);
+            console.log('Counterclockwise start - Position 16:', gameConfig.sequence[14].name);
+            for (var pos in correctAnswers) {
+                console.log(pos + ':', correctAnswers[pos]);
             }
-            console.log('===============================');
+            console.log('=====================================');
         }
 
         function updateGridSize() {
@@ -449,41 +454,55 @@
             var sequenceGrid = document.getElementById('sequenceGrid');
             sequenceGrid.innerHTML = '';
 
-            // Fixed Jason Bateman at position 1
-            var anchorTile = document.createElement('div');
-            anchorTile.className = 'tile';
-            anchorTile.style.position = 'relative';
-            anchorTile.style.gridArea = '1 / 1'; // Row 1, Column 1
-            anchorTile.setAttribute('data-src', gameConfig.anchor.file);
-            anchorTile.setAttribute('data-name', gameConfig.anchor.name);
+            // Create 4x4 grid (16 positions)
+            for (var pos = 1; pos <= 16; pos++) {
+                if (pos === 1) {
+                    // Jason at position 1 (top-left corner)
+                    var anchorTile = document.createElement('div');
+                    anchorTile.className = 'tile';
+                    anchorTile.style.gridArea = '1 / 1';
+                    anchorTile.setAttribute('data-src', gameConfig.anchor.file);
+                    anchorTile.setAttribute('data-name', gameConfig.anchor.name);
 
-            var img = document.createElement('img');
-            img.src = gameConfig.anchor.file;
-            img.alt = gameConfig.anchor.name;
-            img.onerror = function() {
-                anchorTile.innerHTML = '<div style="padding:10px; text-align:center; color:#999; font-size:10px;">' + gameConfig.anchor.name + '<br><small>(Image not found)</small></div>';
-            };
+                    var img = document.createElement('img');
+                    img.src = gameConfig.anchor.file;
+                    img.alt = gameConfig.anchor.name;
+                    img.onerror = function() {
+                        anchorTile.innerHTML = '<div style="padding:2px; text-align:center; color:#999; font-size:6px;">' + gameConfig.anchor.name + '</div>';
+                    };
 
-            anchorTile.appendChild(img);
-            sequenceGrid.appendChild(anchorTile);
+                    anchorTile.appendChild(img);
+                    sequenceGrid.appendChild(anchorTile);
+                    
+                } else if (pos === 2) {
+                    // First starting option: Identity Thief (clockwise)
+                    var dropZone = document.createElement('div');
+                    dropZone.className = 'drop-zone';
+                    dropZone.id = 'dropTile2';
+                    dropZone.style.gridArea = '1 / 2';
+                    dropZone.innerHTML = '<span style="color: #007bff; font-weight: bold;">Movie</span>';
+                    sequenceGrid.appendChild(dropZone);
+                    
+                } else if (pos === 16) {
+                    // Second starting option: Couples Retreat (counterclockwise)  
+                    var dropZone = document.createElement('div');
+                    dropZone.className = 'drop-zone';
+                    dropZone.id = 'dropTile16';
+                    dropZone.style.gridArea = '4 / 1';
+                    dropZone.innerHTML = '<span style="color: #007bff; font-weight: bold;">Movie</span>';
+                    sequenceGrid.appendChild(dropZone);
+                }
+            }
 
-            // Initial movie drop zone at position 2
-            var dropZone = document.createElement('div');
-            dropZone.className = 'drop-zone';
-            dropZone.id = 'dropTile2';
-            dropZone.style.gridArea = '1 / 2'; // Row 1, Column 2
-            dropZone.innerHTML = '<span style="color: #007bff; font-weight: bold; font-size: 12px;">Movie</span>';
-            sequenceGrid.appendChild(dropZone);
-            
-            // Update grid size to only show needed rows
+            // Update grid size
             updateGridSize();
             
-            console.log('=== INITIAL SETUP ===');
-            console.log('Position 1 (anchor):', gameConfig.anchor.name, '→', gameConfig.anchor.file);
-            console.log('Position 2 (first drop zone) expects:', correctAnswers['dropTile2']);
-            console.log('First sequence item:', gameConfig.sequence[0].name, '→', gameConfig.sequence[0].file);
-            console.log('Current position after setup:', currentPosition);
-            console.log('====================');
+            console.log('=== INITIAL RECTANGULAR SETUP ===');
+            console.log('Jason at position 1');
+            console.log('Starting options:');
+            console.log('  Position 2 (clockwise):', gameConfig.sequence[0].name);
+            console.log('  Position 16 (counterclockwise):', gameConfig.sequence[14].name);
+            console.log('==================================');
         }
 
         function createPngGrid() {
@@ -587,11 +606,25 @@
         }
 
         function findNextEmptyDropZone() {
-            // Find the first empty drop zone in order
-            var dropZones = document.querySelectorAll('.drop-zone');
-            for (var i = 0; i < dropZones.length; i++) {
-                if (!dropZones[i].querySelector('img')) {
-                    return dropZones[i];
+            // Find the first empty drop zone based on current game state
+            if (playerPath.length === 0) {
+                // First move: player can choose either starting position
+                var dropZone2 = document.getElementById('dropTile2');
+                var dropZone16 = document.getElementById('dropTile16');
+                
+                if (dropZone2 && !dropZone2.querySelector('img')) {
+                    return dropZone2;
+                }
+                if (dropZone16 && !dropZone16.querySelector('img')) {
+                    return dropZone16;
+                }
+            } else {
+                // Subsequent moves: find next in chosen path
+                var dropZones = document.querySelectorAll('.drop-zone');
+                for (var i = 0; i < dropZones.length; i++) {
+                    if (!dropZones[i].querySelector('img')) {
+                        return dropZones[i];
+                    }
                 }
             }
             return null;
@@ -699,16 +732,24 @@
                 document.getElementById('enterButton').style.display = 'none';
                 document.getElementById('gameMessage').style.display = 'none';
                 
-                // Check if this is NOT the last movie, then add next tile
-                var sequenceIndex = currentPosition - 2;
-                var isLastMovie = sequenceIndex === gameConfig.sequence.length - 1;
-                
-                if (!isLastMovie) {
-                    addNextTile();
+                // Track path direction on first move
+                if (playerPath.length === 0) {
+                    if (dropZone.id === 'dropTile2') {
+                        pathDirection = 'clockwise';
+                        console.log('🔄 Player chose CLOCKWISE path');
+                    } else if (dropZone.id === 'dropTile16') {
+                        pathDirection = 'counterclockwise';
+                        console.log('🔄 Player chose COUNTERCLOCKWISE path');
+                    }
                 }
                 
+                // Add to player path
+                playerPath.push(dropZone.id);
+                
+                // Add next tile based on chosen direction
+                addNextTileInPath();
                 checkIfAllTilesFilled();
-                console.log('✅ CORRECT! ' + (isLastMovie ? 'Final movie completed!' : 'Added next tile'));
+                console.log('✅ CORRECT! Path direction:', pathDirection);
             } else {
                 // Incorrect move
                 dropZone.classList.remove('drag-over');
@@ -736,6 +777,51 @@
                 }
                 console.log('❌ INCORRECT! Attempt', currentAttempt);
             }
+        }
+
+        function addNextTileInPath() {
+            if (!pathDirection || playerPath.length >= 15) return;
+            
+            var nextPosition;
+            var sequenceIndex;
+            
+            if (pathDirection === 'clockwise') {
+                nextPosition = playerPath.length + 2; // 2, 3, 4, 5, etc.
+                sequenceIndex = playerPath.length; // 0, 1, 2, 3, etc.
+                if (nextPosition > 16) return;
+            } else {
+                nextPosition = 16 - playerPath.length; // 16, 15, 14, 13, etc.
+                sequenceIndex = 14 - playerPath.length; // 14, 13, 12, 11, etc.
+                if (nextPosition < 1) return;
+            }
+            
+            // Calculate grid position (1-16 to row/col in 4x4 grid)
+            var row = Math.ceil(nextPosition / 4);
+            var col = ((nextPosition - 1) % 4) + 1;
+            
+            var sequenceGrid = document.getElementById('sequenceGrid');
+            var newDropZone = document.createElement('div');
+            newDropZone.className = 'drop-zone';
+            newDropZone.id = 'dropTile' + nextPosition;
+            newDropZone.style.gridArea = row + ' / ' + col;
+            
+            // Determine if it's movie or actor based on sequence
+            var expectedItem = gameConfig.sequence[sequenceIndex];
+            var isMovieTile = expectedItem.type === 'movie';
+            var color = isMovieTile ? '#007bff' : '#28a745';
+            var label = isMovieTile ? 'Movie' : 'Actor';
+            
+            newDropZone.innerHTML = '<span style="color: ' + color + '; font-weight: bold;">' + label + '</span>';
+            sequenceGrid.appendChild(newDropZone);
+            
+            // Reattach listeners
+            attachDropZoneListeners();
+            
+            console.log('=== ADDED NEXT TILE ===');
+            console.log('Direction:', pathDirection);
+            console.log('Position:', nextPosition, '(Row ' + row + ', Col ' + col + ')');
+            console.log('Expected:', expectedItem.name, '(' + expectedItem.type + ')');
+            console.log('======================');
         }
 
         function placeImageInTile(dropZone, imageSrc, imageName) {
