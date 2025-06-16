@@ -389,7 +389,7 @@
             },
             sequence: [
                 {name: "Identity Thief", file: "movies/identitythief.png", type: "movie"},
-                {name: "Melissa McCarthy", file: "actors/melissa_mccarthy.png", type: "actor"},
+                {name: "Melissa McCarthy", file: "actors/Melissa_McCarthy.png", type: "actor"},
                 {name: "Bridesmaids", file: "movies/bridesmaids.png", type: "movie"},
                 {name: "Rebel Wilson", file: "actors/rebel_wilson.png", type: "actor"},
                 {name: "Pitch Perfect", file: "movies/pitchperfect.png", type: "movie"},
@@ -634,7 +634,6 @@
             }
             console.log('Validation Result:', isCorrect);
             if (!isCorrect && placedImages.size > 0) {
-                // Reset gameSequence to allow new starting moves
                 gameSequence = null;
                 generateCorrectAnswers();
                 console.log('Reset gameSequence due to incorrect move');
