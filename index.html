@@ -389,7 +389,7 @@
             },
             sequence: [
                 {name: "Identity Thief", file: "movies/identitythief.png", type: "movie"},
-                {name: "Melissa McCarthy", file: "actors/Melissa_McCarthy.png", type: "actor"},
+                {name: "Melissa McCarthy", file: "actors/melissa_mccarthy.png", type: "actor"},
                 {name: "Bridesmaids", file: "movies/bridesmaids.png", type: "movie"},
                 {name: "Rebel Wilson", file: "actors/rebel_wilson.png", type: "actor"},
                 {name: "Pitch Perfect", file: "movies/pitchperfect.png", type: "movie"},
@@ -611,11 +611,12 @@
             var instruction = document.getElementById('mobileInstruction');
             instruction.style.display = 'none';
             selectedTile = null;
-            console.log('Mobile: Selection cleared - placed images preserved');
+            console.log('Mobile: Selection cleared - placedImages:', [...placedImages]);
         }
 
         function validateMove(imageSrc, dropZoneId, position) {
-            console.log('Validate Move:', { imageSrc, dropZoneId, position, gameSequence });
+            console.log('Validate Move:', { imageSrc, dropZoneId, position, gameSequence, correctAnswers });
+            console.log('placedImages:', [...placedImages]);
             let isCorrect = false;
             if (gameSequence === null) {
                 const validStartFiles = [
@@ -632,6 +633,12 @@
                 isCorrect = imageSrc === correctImage;
             }
             console.log('Validation Result:', isCorrect);
+            if (!isCorrect && placedImages.size > 0) {
+                // Reset gameSequence to allow new starting moves
+                gameSequence = null;
+                generateCorrectAnswers();
+                console.log('Reset gameSequence due to incorrect move');
+            }
             return isCorrect;
         }
 
@@ -673,7 +680,7 @@
             if (currentAttempt < maxAttempts) {
                 currentAttempt++;
                 document.getElementById('attemptCounter').textContent = 'Attempt ' + currentAttempt + ' of ' + maxAttempts;
-                console.log('Mobile: Attempt incremented to', currentAttempt, '- placed images preserved');
+                console.log('Mobile: Attempt incremented to', currentAttempt, '- placedImages:', [...placedImages]);
             } else {
                 var instruction = document.getElementById('mobileInstruction');
                 instruction.textContent = '💀 GAME OVER! NO ATTEMPTS LEFT';
@@ -919,7 +926,7 @@
                 const position = 2 + i;
                 correctAnswers['dropTile' + position] = fullCircle[indices[i]];
             }
-            console.log(`Sequence generated ${direction} from ${startingMovieFile}`);
+            console.log(`Sequence generated ${direction} from ${startingMovieFile}`, correctAnswers);
         }
 
         function checkIfAllTilesFilled() {
