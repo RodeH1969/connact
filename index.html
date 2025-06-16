@@ -73,17 +73,7 @@
             box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
         }
 
-        .circle-drop-zone.start-option {
-            border-color: #ffc107;
-            background-color: #fff3cd;
-            border-width: 4px;
-            animation: glow 2s infinite;
-        }
 
-        @keyframes glow {
-            0%, 100% { box-shadow: 0 4px 8px rgba(255, 193, 7, 0.3); }
-            50% { box-shadow: 0 6px 20px rgba(255, 193, 7, 0.8); }
-        }
 
         .circle-tile img, .circle-drop-zone img {
             width: 64px;
@@ -258,13 +248,7 @@
             line-height: 1;
         }
 
-        .start-label {
-            color: #ff6b35;
-            font-weight: bold;
-            font-size: 9px;
-            text-align: center;
-            line-height: 1;
-        }
+
 
         /* Mobile Adjustments */
         @media screen and (max-width: 480px) {
@@ -310,7 +294,7 @@
                 font-size: 14px;
             }
 
-            .drop-zone-label, .start-label {
+            .drop-zone-label {
                 font-size: 8px;
             }
         }
@@ -322,7 +306,7 @@
     </div>
 
     <div class="game-info">
-        <div class="game-instructions">Complete the circular path by connecting actors through movies. Start with either Identity Thief (clockwise) or Couples Retreat (counterclockwise) to begin your journey back to Jason Bateman!</div>
+        <div class="game-instructions">Connect actors through movies starting with the actor pictured clockwise or anticlockwise</div>
         <div id="attemptCounter">Attempt 1 of 7</div>
         <div id="gameMessage" class="message" style="display: none;"></div>
         <div id="winMessage" class="win-message" style="display: none;"></div>
@@ -454,9 +438,7 @@
                     dropZone.style.top = y + 'px';
                     
                     // Mark starting positions
-                    if (pos === 2 || pos === 15) {
-                        dropZone.classList.add('start-option');
-                    }
+                    // (removed special highlighting - let players discover naturally)
                     
                     // Determine if it's movie or actor based on sequence index
                     var sequenceIndex = pos - 2; // Convert position to sequence index (0-14)
@@ -466,13 +448,7 @@
                         var color = isMovie ? '#007bff' : '#28a745';
                         var label = isMovie ? 'Movie' : 'Actor';
                         
-                        if (pos === 2) {
-                            dropZone.innerHTML = '<div class="start-label">START<br>' + label + '</div>';
-                        } else if (pos === 15) {
-                            dropZone.innerHTML = '<div class="start-label">START<br>' + label + '</div>';
-                        } else {
-                            dropZone.innerHTML = '<div class="drop-zone-label" style="color: ' + color + ';">' + label + '</div>';
-                        }
+                        dropZone.innerHTML = '<div class="drop-zone-label" style="color: ' + color + ';">' + label + '</div>';
                     }
                     
                     circleContainer.appendChild(dropZone);
@@ -741,59 +717,11 @@
                 dropZone.style.top = position.top;
             };
             
-            var clearButton = document.createElement('div');
-            clearButton.className = 'clear-button';
-            clearButton.innerHTML = '×';
-            clearButton.title = 'Clear image';
-            clearButton.addEventListener('click', function() { 
-                clearCircleTile(dropZone); 
-            });
-            
             dropZone.appendChild(img);
-            dropZone.appendChild(clearButton);
             console.log('Image placed in circle', dropZone.id);
         }
 
-        function clearCircleTile(tile) {
-            var position = tile.style;
-            
-            // Get the position number from tile ID
-            var positionNum = parseInt(tile.id.replace('dropTile', ''));
-            var sequenceIndex = positionNum - 2;
-            
-            // Restore original drop zone appearance
-            if (positionNum === 2 || positionNum === 15) {
-                tile.classList.add('start-option');
-            }
-            
-            if (sequenceIndex >= 0 && sequenceIndex < gameConfig.sequence.length) {
-                var item = gameConfig.sequence[sequenceIndex];
-                var isMovie = item.type === 'movie';
-                var color = isMovie ? '#007bff' : '#28a745';
-                var label = isMovie ? 'Movie' : 'Actor';
-                
-                if (positionNum === 2) {
-                    tile.innerHTML = '<div class="start-label">START<br>' + label + '</div>';
-                } else if (positionNum === 15) {
-                    tile.innerHTML = '<div class="start-label">START<br>' + label + '</div>';
-                } else {
-                    tile.innerHTML = '<div class="drop-zone-label" style="color: ' + color + ';">' + label + '</div>';
-                }
-            } else {
-                tile.innerHTML = '';
-            }
-            
-            tile.style.backgroundColor = '';
-            tile.style.borderColor = '';
-            tile.style.left = position.left;
-            tile.style.top = position.top;
-            
-            placedImages.delete(tile.id);
-            
-            attachDropZoneListeners();
-            checkIfAllTilesFilled();
-            console.log('Circle tile cleared', tile.id);
-        }
+
 
         function checkIfAllTilesFilled() {
             var totalTiles = Object.keys(correctAnswers).length;
