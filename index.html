@@ -16,15 +16,7 @@
             min-height: 100vh;
         }
 
-        .logo-container {
-            text-align: center;
-            margin-bottom: 10px;
-        }
 
-        .logo-container img {
-            max-width: 200px;
-            height: auto;
-        }
 
         .game-container {
             display: flex;
@@ -38,6 +30,24 @@
             width: 400px;
             height: 400px;
             margin: 20px auto;
+        }
+
+        .center-logo {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120px;
+            height: 120px;
+            z-index: 1;
+        }
+
+        .center-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
 
         .circle-tile, .circle-drop-zone {
@@ -257,6 +267,11 @@
                 height: 320px;
             }
 
+            .center-logo {
+                width: 90px;
+                height: 90px;
+            }
+
             .circle-tile, .circle-drop-zone {
                 width: 55px;
                 height: 55px;
@@ -301,9 +316,7 @@
     </style>
 </head>
 <body>
-    <div class="logo-container">
-        <img id="gameLogo" src="connact_logo.png" alt="Game Logo" onerror="this.style.display='none';">
-    </div>
+
 
     <div class="game-info">
         <div class="game-instructions">Connect actors through movies starting with the actor pictured clockwise or anticlockwise</div>
@@ -313,7 +326,11 @@
     </div>
 
     <div class="game-container">
-        <div class="circle-container" id="circleContainer"></div>
+        <div class="circle-container" id="circleContainer">
+            <div class="center-logo">
+                <img src="connact_logo.png" alt="Connact Logo" onerror="this.style.display='none';">
+            </div>
+        </div>
         <button id="enterButton" class="enter-button" onclick="submitMove()" style="display: none;">Enter</button>
         <div class="png-grid" id="pngGrid"></div>
     </div>
