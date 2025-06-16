@@ -212,6 +212,13 @@
             height: 46px;
             object-fit: cover;
             border-radius: 4px;
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+        }
+
+        .png-tile img[src=""], .png-tile img:not([src]) {
+            background-color: #e9ecef;
+            border: 2px dashed #adb5bd;
         }
 
         .enter-button {
@@ -632,8 +639,11 @@
                 img.src = item.file;
                 img.alt = item.name;
                 img.onerror = function() {
-                    this.parentNode.innerHTML = '<div style="padding:2px; text-align:center; color:#999; font-size:8px;">' + this.alt + '</div>';
+                    this.parentNode.innerHTML = '<div style="padding:8px; text-align:center; color:#666; font-size:10px; background:#f8f9fa; border-radius:4px; border:1px solid #ddd;">' + this.alt + '</div>';
                 };
+
+                // Add loading attribute for better performance
+                img.loading = 'lazy';
 
                 tile.appendChild(img);
                 pngGrid.appendChild(tile);
@@ -749,11 +759,15 @@
 
         function showMobileFeedback(isCorrect, imageName) {
             var instruction = document.getElementById('mobileInstruction');
+            var gameMessage = document.getElementById('gameMessage');
             
             if (isCorrect) {
                 instruction.textContent = '✅ CORRECT! ' + imageName.toUpperCase() + ' PLACED!';
                 instruction.style.background = '#28a745';
                 instruction.style.display = 'block';
+                
+                // Hide any error messages
+                gameMessage.style.display = 'none';
                 
                 // Hide success message after 1.5 seconds
                 setTimeout(function() {
@@ -763,16 +777,32 @@
                 console.log('✅ Mobile: Correct placement');
             } else {
                 var remainingAttempts = maxAttempts - currentAttempt;
+                
+                // Show mobile instruction error
                 instruction.textContent = '❌ WRONG! ' + remainingAttempts + ' ATTEMPTS LEFT';
                 instruction.style.background = '#dc3545';
                 instruction.style.display = 'block';
                 
-                // Hide error message after 2 seconds
+                // Also show detailed error message
+                gameMessage.innerHTML = '❌ <strong>' + imageName + '</strong> doesn\'t go there! <br>Try a different position or image. <strong>' + remainingAttempts + ' attempts remaining.</strong>';
+                gameMessage.style.display = 'block';
+                gameMessage.style.background = '#f8d7da';
+                gameMessage.style.borderColor = '#f5c6cb';
+                gameMessage.style.color = '#721c24';
+                gameMessage.style.fontSize = '14px';
+                gameMessage.style.padding = '15px';
+                
+                // Hide mobile instruction after 3 seconds, keep game message visible
                 setTimeout(function() {
                     instruction.style.display = 'none';
-                }, 2000);
+                }, 3000);
                 
-                console.log('❌ Mobile: Incorrect placement');
+                // Hide game message after 5 seconds
+                setTimeout(function() {
+                    gameMessage.style.display = 'none';
+                }, 5000);
+                
+                console.log('❌ Mobile: Incorrect placement -', imageName);
             }
         }
 
@@ -987,7 +1017,9 @@
                 }
                 
                 var remainingAttempts = maxAttempts - currentAttempt;
-                document.getElementById('gameMessage').innerHTML = '❌ Wrong! You have ' + remainingAttempts + ' attempts remaining.';
+                
+                // Show detailed error message for desktop too
+                document.getElementById('gameMessage').innerHTML = '❌ <strong>' + imageName + '</strong> doesn\'t belong in that position! <br>Think about the movie connections. <strong>' + remainingAttempts + ' attempts remaining.</strong>';
                 document.getElementById('gameMessage').style.display = 'block';
                 document.getElementById('gameMessage').style.background = '#f8d7da';
                 document.getElementById('gameMessage').style.borderColor = '#f5c6cb';
@@ -1002,7 +1034,7 @@
                     document.getElementById('attemptCounter').textContent = 'Attempt ' + currentAttempt + ' of ' + maxAttempts;
                 } else {
                     // Game over
-                    document.getElementById('gameMessage').innerHTML = 'Game Over! You have used all ' + maxAttempts + ' attempts.';
+                    document.getElementById('gameMessage').innerHTML = '💀 <strong>Game Over!</strong> You have used all ' + maxAttempts + ' attempts.<br>Refresh to try again!';
                     gameWon = true; // Prevent further interactions
                 }
                 console.log('❌ INCORRECT! Attempt', currentAttempt);
