@@ -13,6 +13,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            min-height: 100vh;
         }
 
         .logo-container {
@@ -25,54 +26,70 @@
             height: auto;
         }
 
-        .tile, .drop-zone {
-            width: 100px;
-            height: 100px;
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        .circle-container {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            margin: 20px auto;
+        }
+
+        .circle-tile, .circle-drop-zone {
+            position: absolute;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            border: 3px solid #333;
+            background-color: #fff;
             display: flex;
             align-items: center;
             justify-content: center;
-            border: 4px solid #000;
-            box-sizing: border-box;
-            border-radius: 8px;
-            background-color: #fff;
-            position: relative;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .tile:hover {
-            transform: scale(1.02);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-
-        .tile.dragging {
-            opacity: 0.5;
-        }
-
-        .drop-zone {
-            cursor: default;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
             transition: all 0.3s ease;
-            text-align: center;
+            box-sizing: border-box;
+        }
+
+        .circle-tile:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+        }
+
+        .circle-drop-zone {
+            cursor: default;
             border-style: solid;
         }
 
-        .drop-zone.drag-over {
+        .circle-drop-zone.drag-over {
             background-color: #e8f5e8;
             border-color: #4CAF50;
             border-style: dashed;
-            transform: scale(1.05);
-            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
         }
 
-        .drop-zone:not(.drag-over):hover {
-            background-color: #f8f9fa;
-            border-color: #007bff;
+        .circle-drop-zone.start-option {
+            border-color: #ffc107;
+            background-color: #fff3cd;
+            border-width: 4px;
+            animation: glow 2s infinite;
         }
 
-        .tile img, .drop-zone img {
-            width: 92px;
-            height: 92px;
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 4px 8px rgba(255, 193, 7, 0.3); }
+            50% { box-shadow: 0 6px 20px rgba(255, 193, 7, 0.8); }
+        }
+
+        .circle-tile img, .circle-drop-zone img {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
             object-fit: cover;
-            border-radius: 4px;
         }
 
         .clear-button {
@@ -88,9 +105,10 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 8px;
+            font-size: 10px;
             font-weight: bold;
             color: #666;
+            z-index: 10;
         }
 
         .clear-button:hover {
@@ -98,44 +116,18 @@
             color: #333;
         }
 
-        .game-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .sequence-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            grid-template-rows: repeat(4, 1fr);
-            gap: 3px;
-            justify-content: center;
-            margin-bottom: 15px;
-            width: 200px;
-            height: 200px;
-            margin: 0 auto 15px auto;
-            position: relative;
-            z-index: 1;
-        }
-
-        .grid-placeholder {
-            background: transparent;
-            border: 1px dashed #ddd;
-            border-radius: 4px;
-            opacity: 0.3;
-        }
-
         .png-grid {
             display: grid;
             grid-template-columns: repeat(5, 50px);
             grid-template-rows: repeat(3, 50px);
-            gap: 5px;
+            gap: 8px;
             max-width: 100%;
-            margin-top: 10px;
+            margin-top: 20px;
             justify-content: center;
-            position: relative;
-            z-index: 2;
-            clear: both;
+            padding: 15px;
+            background: rgba(255,255,255,0.8);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
 
         .png-tile {
@@ -146,12 +138,12 @@
             justify-content: center;
             border: 2px solid #ccc;
             box-sizing: border-box;
-            border-radius: 4px;
+            border-radius: 8px;
             background-color: #fff;
             cursor: grab;
             transition: transform 0.2s, opacity 0.2s, border-color 0.2s;
-            touch-action: none; /* Prevent scrolling when dragging */
-            user-select: none; /* Prevent text selection */
+            touch-action: none;
+            user-select: none;
         }
 
         .png-tile:hover, .png-tile:active {
@@ -173,7 +165,7 @@
             width: 46px;
             height: 46px;
             object-fit: cover;
-            border-radius: 2px;
+            border-radius: 4px;
         }
 
         .enter-button {
@@ -186,7 +178,7 @@
             font-size: 16px;
             font-weight: bold;
             cursor: pointer;
-            margin-top: 15px;
+            margin: 15px 0;
             transition: all 0.3s ease;
             box-shadow: 0 2px 8px rgba(0,123,255,0.3);
             animation: pulse 1.5s infinite;
@@ -216,7 +208,7 @@
             color: #333;
             margin-bottom: 15px;
             font-weight: normal;
-            max-width: 500px;
+            max-width: 600px;
             margin-left: auto;
             margin-right: auto;
             line-height: 1.4;
@@ -258,55 +250,68 @@
             background: #218838;
         }
 
+        .drop-zone-label {
+            color: #666;
+            font-weight: bold;
+            font-size: 10px;
+            text-align: center;
+            line-height: 1;
+        }
+
+        .start-label {
+            color: #ff6b35;
+            font-weight: bold;
+            font-size: 9px;
+            text-align: center;
+            line-height: 1;
+        }
+
         /* Mobile Adjustments */
-        @media screen and (max-width: 360px) {
-            .tile, .drop-zone {
-                width: 50px;
-                height: 50px;
+        @media screen and (max-width: 480px) {
+            .circle-container {
+                width: 320px;
+                height: 320px;
             }
 
-            .tile img, .drop-zone img {
-                width: 46px;
-                height: 46px;
+            .circle-tile, .circle-drop-zone {
+                width: 55px;
+                height: 55px;
+                border: 2px solid #333;
             }
 
-            .sequence-grid {
-                grid-template-columns: repeat(4, 50px);
-                gap: 2px;
-            }
-
-            .final-jason-tile {
-                width: 50px;
-                height: 50px;
-                left: -55px; /* 50px width + 5px gap to the left of grid */
-                top: 156px; /* Row 4 position: (3 rows * 50px) + (3 gaps * 2px) = 156px */
-            }
-
-            .final-jason-tile img {
-                width: 46px;
-                height: 46px;
+            .circle-tile img, .circle-drop-zone img {
+                width: 51px;
+                height: 51px;
             }
 
             .png-grid {
-                grid-template-columns: repeat(3, 25px);
-                grid-template-rows: repeat(5, 25px);
-                gap: 2px;
-                max-width: 77px;
+                grid-template-columns: repeat(5, 40px);
+                grid-template-rows: repeat(3, 40px);
+                gap: 6px;
             }
 
             .png-tile {
-                width: 25px;
-                height: 25px;
+                width: 40px;
+                height: 40px;
+                border: 1px solid #ccc;
             }
 
             .png-tile img {
-                width: 23px;
-                height: 23px;
+                width: 38px;
+                height: 38px;
             }
 
             .enter-button {
-                padding: 5px 10px;
-                font-size: 12px;
+                padding: 8px 16px;
+                font-size: 14px;
+            }
+
+            .game-instructions {
+                font-size: 14px;
+            }
+
+            .drop-zone-label, .start-label {
+                font-size: 8px;
             }
         }
     </style>
@@ -317,14 +322,14 @@
     </div>
 
     <div class="game-info">
-        <div class="game-instructions">Connect actors through movies using just the images below to get back to our starting actor</div>
+        <div class="game-instructions">Complete the circular path by connecting actors through movies. Start with either Identity Thief (clockwise) or Couples Retreat (counterclockwise) to begin your journey back to Jason Bateman!</div>
         <div id="attemptCounter">Attempt 1 of 7</div>
         <div id="gameMessage" class="message" style="display: none;"></div>
         <div id="winMessage" class="win-message" style="display: none;"></div>
     </div>
 
     <div class="game-container">
-        <div class="sequence-grid" id="sequenceGrid"></div>
+        <div class="circle-container" id="circleContainer"></div>
         <button id="enterButton" class="enter-button" onclick="submitMove()" style="display: none;">Enter</button>
         <div class="png-grid" id="pngGrid"></div>
     </div>
@@ -361,174 +366,120 @@
         var currentAttempt = 1;
         var maxAttempts = 7;
         var gameWon = false;
-        var revealInProgress = false;
         var correctAnswers = {};
         var placedImages = new Map();
-        var sequencePositions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]; // Rectangular circuit
-        var rectangularLayout = [
-            [1,  2,  3,  4 ],  // Top row
-            [16, 0,  0,  5 ],  // Middle rows (0 = empty)
-            [15, 0,  0,  6 ],  
-            [14, 13, 12, 11]   // Bottom row: ... ← 11 ← 10 ← 9 ← 8 ← 7
-        ];
-        var validPaths = {
-            clockwise: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], // Jason → Identity → ...
-            counterclockwise: [16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2] // Jason → Couples → ...
-        };
-        var currentPosition = 2;
         var draggedTile = null;
         var pngTiles = [];
-        var finalJasonAdded = false; // Track if final Jason has been added
-        
-        // Touch support variables
-        var touchedTile = null;
-        var isDragging = false;
         var isMobile = false;
 
-        // Initialize game
         function initializeGame() {
-            currentPosition = 1; // Start at Jason position
             gameWon = false;
-            revealInProgress = false;
             placedImages.clear();
             draggedTile = null;
-            finalJasonAdded = false;
-            
-            // Reset path tracking
-            playerPath = [];
-            pathDirection = null;
             
             generateCorrectAnswers();
-            createInitialSequence();
+            createCircularLayout();
             createPngGrid();
             attachEventListeners();
-            console.log('Rectangular circuit game initialized');
+            console.log('Circular layout game initialized');
         }
 
         function generateCorrectAnswers() {
             correctAnswers = {};
             
-            // Position 1 is always Jason (anchor)
-            // Position 2: Identity Thief (clockwise start)
-            // Position 13: Couples Retreat (counterclockwise start)
-            correctAnswers['dropTile2'] = gameConfig.sequence[0].file; // Identity Thief
-            correctAnswers['dropTile13'] = gameConfig.sequence[14].file; // Couples Retreat
-            
-            // Map all sequence items to their rectangular positions
-            // Clockwise path: 2→3→4→5→8→12→16→15→14→13
-            // Counterclockwise path: 13→14→15→16→12→8→5→4→3→2
-            
-            var clockwisePositions = [2, 3, 4, 5, 8, 12, 16, 15, 14, 13];
-            var counterclockwisePositions = [13, 14, 15, 16, 12, 8, 5, 4, 3, 2];
-            
-            // Generate answers for both paths
+            // Position 1: Jason Bateman (anchor) - no answer needed, it's fixed
+            // Positions 2-16: The 15 sequence items in order
             for (var i = 0; i < gameConfig.sequence.length; i++) {
-                if (i < clockwisePositions.length) {
-                    correctAnswers['dropTile' + clockwisePositions[i]] = gameConfig.sequence[i].file;
-                }
+                var position = i + 2; // Positions 2-16
+                correctAnswers['dropTile' + position] = gameConfig.sequence[i].file;
             }
             
-            console.log('=== BIDIRECTIONAL ANSWERS MAPPING ===');
-            console.log('Jason at position 1');
-            console.log('Clockwise start - Position 2:', gameConfig.sequence[0].name);
-            console.log('Counterclockwise start - Position 13:', gameConfig.sequence[14].name);
-            console.log('All mapped positions:', Object.keys(correctAnswers));
-            console.log('=====================================');
-        }
-
-        function updateGridSize() {
-            var sequenceGrid = document.getElementById('sequenceGrid');
-            var allTiles = sequenceGrid.querySelectorAll('.tile:not(.final-jason-tile), .drop-zone');
-            var maxRow = 1;
-            
-            // Find the highest row number currently in use (excluding Jason)
-            for (var i = 0; i < allTiles.length; i++) {
-                var gridArea = allTiles[i].style.gridArea;
-                if (gridArea) {
-                    var parts = gridArea.split(' / ');
-                    var row = parseInt(parts[0]);
-                    if (row > maxRow) {
-                        maxRow = row;
-                    }
-                }
+            console.log('=== CIRCULAR LAYOUT MAPPING ===');
+            console.log('Position 1: Jason Bateman (anchor)');
+            for (var i = 0; i < gameConfig.sequence.length; i++) {
+                var pos = i + 2;
+                console.log('Position ' + pos + ':', gameConfig.sequence[i].name, '(' + gameConfig.sequence[i].type + ')');
             }
-            
-            // Check if we're on mobile (screen width <= 360px)
-            var isMobile = window.innerWidth <= 360;
-            var tileSize = isMobile ? '50px' : '100px';
-            
-            // Update the grid to only have the rows we need
-            sequenceGrid.style.gridTemplateRows = 'repeat(' + maxRow + ', ' + tileSize + ')';
-            console.log('Grid updated to', maxRow, 'rows (' + tileSize + ' each) - Jason positioned outside');
-        }
-
-        function createInitialSequence() {
-            var sequenceGrid = document.getElementById('sequenceGrid');
-            sequenceGrid.innerHTML = '';
-
-            // Create complete 4x4 grid structure
-            for (var row = 1; row <= 4; row++) {
-                for (var col = 1; col <= 4; col++) {
-                    var pos = (row - 1) * 4 + col; // Convert row/col to position 1-16
-                    
-                    if (pos === 1) {
-                        // Jason at position 1 (top-left corner)
-                        var anchorTile = document.createElement('div');
-                        anchorTile.className = 'tile';
-                        anchorTile.style.gridArea = row + ' / ' + col;
-                        anchorTile.setAttribute('data-src', gameConfig.anchor.file);
-                        anchorTile.setAttribute('data-name', gameConfig.anchor.name);
-
-                        var img = document.createElement('img');
-                        img.src = gameConfig.anchor.file;
-                        img.alt = gameConfig.anchor.name;
-                        img.onerror = function() {
-                            anchorTile.innerHTML = '<div style="padding:2px; text-align:center; color:#999; font-size:6px;">' + gameConfig.anchor.name + '</div>';
-                        };
-
-                        anchorTile.appendChild(img);
-                        sequenceGrid.appendChild(anchorTile);
-                        
-                    } else if (pos === 2) {
-                        // First starting option: Identity Thief (clockwise)
-                        var dropZone = document.createElement('div');
-                        dropZone.className = 'drop-zone';
-                        dropZone.id = 'dropTile2';
-                        dropZone.style.gridArea = row + ' / ' + col;
-                        dropZone.innerHTML = '<span style="color: #007bff; font-weight: bold; font-size: 8px;">Movie</span>';
-                        sequenceGrid.appendChild(dropZone);
-                        
-                    } else if (pos === 13) {
-                        // Second starting option: Couples Retreat (counterclockwise)  
-                        var dropZone = document.createElement('div');
-                        dropZone.className = 'drop-zone';
-                        dropZone.id = 'dropTile13';
-                        dropZone.style.gridArea = row + ' / ' + col;
-                        dropZone.innerHTML = '<span style="color: #007bff; font-weight: bold; font-size: 8px;">Movie</span>';
-                        sequenceGrid.appendChild(dropZone);
-                        
-                    } else if (pos === 2 || pos === 3 || pos === 4 || pos === 5 || pos === 8 || pos === 9 || pos === 12 || pos === 13 || pos === 14 || pos === 15 || pos === 16) {
-                        // Create placeholder for circuit positions (initially hidden)
-                        var placeholder = document.createElement('div');
-                        placeholder.className = 'grid-placeholder';
-                        placeholder.id = 'placeholder' + pos;
-                        placeholder.style.gridArea = row + ' / ' + col;
-                        placeholder.style.width = '100%';
-                        placeholder.style.height = '100%';
-                        placeholder.style.border = '1px dashed #ddd';
-                        placeholder.style.borderRadius = '4px';
-                        placeholder.style.opacity = '0.3';
-                        sequenceGrid.appendChild(placeholder);
-                    }
-                }
-            }
-            
-            console.log('=== RECTANGULAR GRID SETUP ===');
-            console.log('Jason at position 1');
             console.log('Starting options:');
-            console.log('  Position 2 (clockwise):', gameConfig.sequence[0].name);
-            console.log('  Position 13 (counterclockwise):', gameConfig.sequence[14].name);
-            console.log('==============================');
+            console.log('  Position 2: Identity Thief (clockwise)');
+            console.log('  Position 15: Couples Retreat (counterclockwise)');
+            console.log('===============================');
+        }
+
+        function createCircularLayout() {
+            var circleContainer = document.getElementById('circleContainer');
+            circleContainer.innerHTML = '';
+
+            var isMobile = window.innerWidth <= 480;
+            var containerSize = isMobile ? 320 : 400;
+            var tileSize = isMobile ? 55 : 70;
+            var radius = (containerSize - tileSize) / 2;
+            var centerX = containerSize / 2;
+            var centerY = containerSize / 2;
+
+            // Create 16 positions in a circle
+            for (var pos = 1; pos <= 16; pos++) {
+                // Calculate angle for this position (starting from top, going clockwise)
+                var angle = ((pos - 1) * 22.5 - 90) * (Math.PI / 180); // -90 to start at top
+                
+                // Calculate position
+                var x = centerX + radius * Math.cos(angle) - tileSize / 2;
+                var y = centerY + radius * Math.sin(angle) - tileSize / 2;
+
+                if (pos === 1) {
+                    // Jason Bateman at position 1
+                    var anchorTile = document.createElement('div');
+                    anchorTile.className = 'circle-tile';
+                    anchorTile.style.left = x + 'px';
+                    anchorTile.style.top = y + 'px';
+                    anchorTile.setAttribute('data-src', gameConfig.anchor.file);
+                    anchorTile.setAttribute('data-name', gameConfig.anchor.name);
+
+                    var img = document.createElement('img');
+                    img.src = gameConfig.anchor.file;
+                    img.alt = gameConfig.anchor.name;
+                    img.onerror = function() {
+                        anchorTile.innerHTML = '<div style="padding:2px; text-align:center; color:#999; font-size:10px;">' + gameConfig.anchor.name + '</div>';
+                    };
+
+                    anchorTile.appendChild(img);
+                    circleContainer.appendChild(anchorTile);
+                    
+                } else {
+                    // Create drop zones for positions 2-16
+                    var dropZone = document.createElement('div');
+                    dropZone.className = 'circle-drop-zone';
+                    dropZone.id = 'dropTile' + pos;
+                    dropZone.style.left = x + 'px';
+                    dropZone.style.top = y + 'px';
+                    
+                    // Mark starting positions
+                    if (pos === 2 || pos === 15) {
+                        dropZone.classList.add('start-option');
+                    }
+                    
+                    // Determine if it's movie or actor based on sequence index
+                    var sequenceIndex = pos - 2; // Convert position to sequence index (0-14)
+                    if (sequenceIndex >= 0 && sequenceIndex < gameConfig.sequence.length) {
+                        var item = gameConfig.sequence[sequenceIndex];
+                        var isMovie = item.type === 'movie';
+                        var color = isMovie ? '#007bff' : '#28a745';
+                        var label = isMovie ? 'Movie' : 'Actor';
+                        
+                        if (pos === 2) {
+                            dropZone.innerHTML = '<div class="start-label">START<br>' + label + '</div>';
+                        } else if (pos === 15) {
+                            dropZone.innerHTML = '<div class="start-label">START<br>' + label + '</div>';
+                        } else {
+                            dropZone.innerHTML = '<div class="drop-zone-label" style="color: ' + color + ';">' + label + '</div>';
+                        }
+                    }
+                    
+                    circleContainer.appendChild(dropZone);
+                }
+            }
+            
+            console.log('Circular layout created with 16 positions');
         }
 
         function createPngGrid() {
@@ -538,7 +489,7 @@
 
             var allImages = gameConfig.sequence.slice();
             
-            // Traditional array shuffle (Fisher-Yates)
+            // Shuffle the array
             for (var i = allImages.length - 1; i > 0; i--) {
                 var j = Math.floor(Math.random() * (i + 1));
                 var temp = allImages[i];
@@ -562,53 +513,51 @@
                 img.src = item.file;
                 img.alt = item.name;
                 img.onerror = function() {
-                    this.parentNode.innerHTML = '<div style="padding:5px; text-align:center; color:#999; font-size:8px;">' + this.alt + '</div>';
+                    this.parentNode.innerHTML = '<div style="padding:2px; text-align:center; color:#999; font-size:8px;">' + this.alt + '</div>';
                 };
 
                 tile.appendChild(img);
                 pngGrid.appendChild(tile);
             }
             console.log('========================');
-            console.log('PNG grid created with', pngTiles.length, 'tiles');
         }
 
         function attachEventListeners() {
             var imageElements = document.querySelectorAll('.png-tile');
             
-            // Detect if mobile
             isMobile = window.innerWidth <= 768 || 'ontouchstart' in window;
 
             for (var i = 0; i < imageElements.length; i++) {
                 if (isMobile) {
                     // Mobile: Simple tap to place
                     imageElements[i].addEventListener('touchstart', function(e) {
-                        if (gameWon || revealInProgress) return;
+                        if (gameWon) return;
                         e.preventDefault();
                         
                         var imageSrc = this.getAttribute('data-src');
                         var imageName = this.getAttribute('data-name');
                         
-                        // Find next empty drop zone
-                        var nextDropZone = findNextEmptyDropZone();
-                        if (nextDropZone) {
+                        // Find a valid drop zone for this image
+                        var validDropZone = findValidDropZone(imageSrc);
+                        if (validDropZone) {
                             draggedTile = this;
                             this.style.opacity = '0.3';
-                            nextDropZone.style.backgroundColor = '#fff3cd';
-                            nextDropZone.style.borderColor = '#ffc107';
-                            nextDropZone.classList.add('drag-over');
+                            validDropZone.style.backgroundColor = '#fff3cd';
+                            validDropZone.style.borderColor = '#ffc107';
+                            validDropZone.classList.add('drag-over');
                             
                             var enterButton = document.getElementById('enterButton');
                             enterButton.style.display = 'block';
                             enterButton.style.backgroundColor = '#28a745';
                             enterButton.textContent = 'Submit "' + imageName + '"';
                             
-                            console.log('Mobile tap - ready to submit:', imageName, 'to', nextDropZone.id);
+                            console.log('Mobile tap - ready to submit:', imageName, 'to', validDropZone.id);
                         }
                     });
                 } else {
                     // Desktop: Drag and drop
                     imageElements[i].addEventListener('dragstart', function(e) {
-                        if (gameWon || revealInProgress) return;
+                        if (gameWon) return;
                         
                         draggedTile = this;
                         var imgSrc = this.getAttribute('data-src');
@@ -627,37 +576,25 @@
                 }
             }
 
-            // Attach listeners to existing drop zones
+            // Attach listeners to all drop zones
             attachDropZoneListeners();
         }
 
-        function findNextEmptyDropZone() {
-            // Find the first empty drop zone based on current game state
-            if (playerPath.length === 0) {
-                // First move: player can choose either starting position
-                var dropZone2 = document.getElementById('dropTile2');
-                var dropZone13 = document.getElementById('dropTile13');
+        function findValidDropZone(imageSrc) {
+            // Find a drop zone that accepts this image and is empty
+            for (var pos = 2; pos <= 16; pos++) {
+                var dropZoneId = 'dropTile' + pos;
+                var dropZone = document.getElementById(dropZoneId);
                 
-                if (dropZone2 && !dropZone2.querySelector('img')) {
-                    return dropZone2;
-                }
-                if (dropZone13 && !dropZone13.querySelector('img')) {
-                    return dropZone13;
-                }
-            } else {
-                // Subsequent moves: find next in chosen path
-                var dropZones = document.querySelectorAll('.drop-zone');
-                for (var i = 0; i < dropZones.length; i++) {
-                    if (!dropZones[i].querySelector('img')) {
-                        return dropZones[i];
-                    }
+                if (dropZone && !dropZone.querySelector('img') && correctAnswers[dropZoneId] === imageSrc) {
+                    return dropZone;
                 }
             }
             return null;
         }
 
         function attachDropZoneListeners() {
-            var dropZones = document.querySelectorAll('.drop-zone');
+            var dropZones = document.querySelectorAll('.circle-drop-zone');
             
             for (var i = 0; i < dropZones.length; i++) {
                 // Remove existing listeners by cloning the element
@@ -666,12 +603,12 @@
                 
                 // Add fresh event listeners
                 newDropZone.addEventListener('dragover', function(e) {
-                    if (gameWon || revealInProgress) return;
+                    if (gameWon) return;
                     e.preventDefault();
                     e.dataTransfer.dropEffect = 'move';
                     
                     // Remove drag-over from all other zones
-                    var allZones = document.querySelectorAll('.drop-zone');
+                    var allZones = document.querySelectorAll('.circle-drop-zone');
                     for (var j = 0; j < allZones.length; j++) {
                         allZones[j].classList.remove('drag-over');
                     }
@@ -682,23 +619,20 @@
                 });
                 
                 newDropZone.addEventListener('dragleave', function(e) {
-                    // Only remove if we're actually leaving the drop zone area
                     var rect = this.getBoundingClientRect();
                     var x = e.clientX;
                     var y = e.clientY;
                     
                     if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
                         this.classList.remove('drag-over');
-                        // Check if any zones still have drag-over
-                        if (!document.querySelector('.drop-zone.drag-over')) {
+                        if (!document.querySelector('.circle-drop-zone.drag-over')) {
                             document.getElementById('enterButton').style.display = 'none';
                         }
                     }
-                    console.log('Drag leave', this.id);
                 });
                 
                 newDropZone.addEventListener('drop', function(e) {
-                    if (gameWon || revealInProgress) return;
+                    if (gameWon) return;
                     
                     e.preventDefault();
                     
@@ -706,7 +640,6 @@
                     var imageName = e.dataTransfer.getData('text/name');
                     
                     if (imageSrc && !this.querySelector('img') && draggedTile) {
-                        // Visual feedback that something is ready to be submitted
                         draggedTile.style.opacity = '0.3';
                         this.style.backgroundColor = '#fff3cd';
                         this.style.borderColor = '#ffc107';
@@ -728,7 +661,7 @@
                 return;
             }
 
-            var dropZone = document.querySelector('.drop-zone.drag-over');
+            var dropZone = document.querySelector('.circle-drop-zone.drag-over');
             if (!dropZone) {
                 console.log('No drop zone with drag-over class');
                 return;
@@ -747,37 +680,21 @@
             
             if (imageSrc === correctImage) {
                 // Correct move
-                placeImageInTile(dropZone, imageSrc, imageName);
+                placeImageInCircle(dropZone, imageSrc, imageName);
                 draggedTile.parentNode.removeChild(draggedTile);
                 draggedTile = null;
                 
                 // Clear visual feedback
-                dropZone.classList.remove('drag-over');
+                dropZone.classList.remove('drag-over', 'start-option');
                 dropZone.style.backgroundColor = '';
                 dropZone.style.borderColor = '';
                 document.getElementById('enterButton').style.display = 'none';
                 document.getElementById('gameMessage').style.display = 'none';
                 
-                // Track path direction on first move
-                if (playerPath.length === 0) {
-                    if (dropZone.id === 'dropTile2') {
-                        pathDirection = 'clockwise';
-                        console.log('🔄 Player chose CLOCKWISE path');
-                    } else if (dropZone.id === 'dropTile13') {
-                        pathDirection = 'counterclockwise';
-                        console.log('🔄 Player chose COUNTERCLOCKWISE path');
-                    }
-                }
-                
-                // Add to player path
-                playerPath.push(dropZone.id);
-                
-                // Add next tile based on chosen direction
-                addNextTileInPath();
                 checkIfAllTilesFilled();
-                console.log('✅ CORRECT! Path direction:', pathDirection);
+                console.log('✅ CORRECT! Tiles placed:', placedImages.size);
             } else {
-                // Incorrect move
+                // Incorrect move - return tile to PNG area
                 dropZone.classList.remove('drag-over');
                 dropZone.style.backgroundColor = '';
                 dropZone.style.borderColor = '';
@@ -805,86 +722,23 @@
             }
         }
 
-        function addNextTileInPath() {
-            if (!pathDirection || playerPath.length >= 15) return;
-            
-            // Define the path positions around the rectangle
-            var clockwisePositions = [2, 3, 4, 5, 8, 12, 16, 15, 14, 13];
-            var counterclockwisePositions = [13, 14, 15, 16, 12, 8, 5, 4, 3, 2];
-            
-            var nextPosition;
-            var sequenceIndex;
-            
-            if (pathDirection === 'clockwise') {
-                if (playerPath.length >= clockwisePositions.length) return;
-                nextPosition = clockwisePositions[playerPath.length];
-                sequenceIndex = playerPath.length;
-            } else {
-                if (playerPath.length >= counterclockwisePositions.length) return;
-                nextPosition = counterclockwisePositions[playerPath.length];
-                sequenceIndex = 14 - playerPath.length;
-            }
-            
-            // Calculate grid position (1-16 to row/col in 4x4 grid)
-            var row = Math.ceil(nextPosition / 4);
-            var col = ((nextPosition - 1) % 4) + 1;
-            
-            // Remove placeholder and create drop zone
-            var placeholder = document.getElementById('placeholder' + nextPosition);
-            if (placeholder) {
-                placeholder.remove();
-            }
-            
-            var sequenceGrid = document.getElementById('sequenceGrid');
-            var newDropZone = document.createElement('div');
-            newDropZone.className = 'drop-zone';
-            newDropZone.id = 'dropTile' + nextPosition;
-            newDropZone.style.gridArea = row + ' / ' + col;
-            
-            // Determine if it's movie or actor based on sequence
-            var expectedItem = gameConfig.sequence[sequenceIndex];
-            if (expectedItem) {
-                var isMovieTile = expectedItem.type === 'movie';
-                var color = isMovieTile ? '#007bff' : '#28a745';
-                var label = isMovieTile ? 'Movie' : 'Actor';
-                
-                newDropZone.innerHTML = '<span style="color: ' + color + '; font-weight: bold; font-size: 8px;">' + label + '</span>';
-            }
-            
-            sequenceGrid.appendChild(newDropZone);
-            
-            // Reattach listeners
-            attachDropZoneListeners();
-            
-            console.log('=== ADDED NEXT TILE ===');
-            console.log('Direction:', pathDirection);
-            console.log('Position:', nextPosition, '(Row ' + row + ', Col ' + col + ')');
-            console.log('Expected:', expectedItem ? expectedItem.name : 'unknown');
-            console.log('======================');
-        }
-
-        function placeImageInTile(dropZone, imageSrc, imageName) {
-            // Preserve the grid positioning
-            var gridArea = dropZone.style.gridArea;
+        function placeImageInCircle(dropZone, imageSrc, imageName) {
+            var position = dropZone.style;
             
             dropZone.innerHTML = '';
-            
-            // Restore grid positioning  
-            dropZone.style.gridArea = gridArea;
+            dropZone.style.left = position.left;
+            dropZone.style.top = position.top;
             
             placedImages.set(dropZone.id, {src: imageSrc, name: imageName});
             
             var img = document.createElement('img');
             img.src = imageSrc;
             img.alt = imageName;
-            img.style.width = '92px';
-            img.style.height = '92px';
-            img.style.objectFit = 'cover';
-            img.style.borderRadius = '4px';
             
             img.onerror = function() {
-                dropZone.innerHTML = '<div style="padding:10px; color:#999; font-size:10px;">' + imageName + '<br><small>(Image not found)</small></div>';
-                dropZone.style.gridArea = gridArea; // Restore grid positioning even on error
+                dropZone.innerHTML = '<div style="padding:4px; color:#999; font-size:8px; text-align:center;">' + imageName + '<br><small>(Image not found)</small></div>';
+                dropZone.style.left = position.left;
+                dropZone.style.top = position.top;
             };
             
             var clearButton = document.createElement('div');
@@ -892,132 +746,53 @@
             clearButton.innerHTML = '×';
             clearButton.title = 'Clear image';
             clearButton.addEventListener('click', function() { 
-                clearTile(dropZone); 
+                clearCircleTile(dropZone); 
             });
             
             dropZone.appendChild(img);
             dropZone.appendChild(clearButton);
-            console.log('Image placed in', dropZone.id, 'at grid position', gridArea);
+            console.log('Image placed in circle', dropZone.id);
         }
 
-        function clearTile(tile) {
-            var tileNumber = tile.id.replace('dropTile', '');
-            var tileNum = parseInt(tileNumber);
+        function clearCircleTile(tile) {
+            var position = tile.style;
             
-            // Preserve grid positioning
-            var gridArea = tile.style.gridArea;
+            // Get the position number from tile ID
+            var positionNum = parseInt(tile.id.replace('dropTile', ''));
+            var sequenceIndex = positionNum - 2;
             
-            var placedImage = placedImages.get(tile.id);
+            // Restore original drop zone appearance
+            if (positionNum === 2 || positionNum === 15) {
+                tile.classList.add('start-option');
+            }
             
-            var isMovieTile = tileNum % 2 === 0;
-            var color = isMovieTile ? '#007bff' : '#28a745';
-            var label = isMovieTile ? 'Movie' : 'Actor';
+            if (sequenceIndex >= 0 && sequenceIndex < gameConfig.sequence.length) {
+                var item = gameConfig.sequence[sequenceIndex];
+                var isMovie = item.type === 'movie';
+                var color = isMovie ? '#007bff' : '#28a745';
+                var label = isMovie ? 'Movie' : 'Actor';
+                
+                if (positionNum === 2) {
+                    tile.innerHTML = '<div class="start-label">START<br>' + label + '</div>';
+                } else if (positionNum === 15) {
+                    tile.innerHTML = '<div class="start-label">START<br>' + label + '</div>';
+                } else {
+                    tile.innerHTML = '<div class="drop-zone-label" style="color: ' + color + ';">' + label + '</div>';
+                }
+            } else {
+                tile.innerHTML = '';
+            }
             
-            tile.innerHTML = '<span style="color: ' + color + '; font-weight: bold; font-size: 12px;">' + label + '</span>';
             tile.style.backgroundColor = '';
             tile.style.borderColor = '';
-            
-            // Restore grid positioning
-            tile.style.gridArea = gridArea;
+            tile.style.left = position.left;
+            tile.style.top = position.top;
             
             placedImages.delete(tile.id);
             
-            // Reattach listeners after clearing
             attachDropZoneListeners();
-            
             checkIfAllTilesFilled();
-            console.log('Tile cleared', tile.id, 'at grid position', gridArea);
-        }
-
-        function addNextTile() {
-            currentPosition++;
-            if (currentPosition > 16) return;
-
-            var sequenceGrid = document.getElementById('sequenceGrid');
-            var newDropZone = document.createElement('div');
-            newDropZone.className = 'drop-zone';
-            
-            var gridPosition = sequencePositions[currentPosition - 1];
-            newDropZone.id = 'dropTile' + gridPosition;
-            
-            // Convert position to grid coordinates (1-16 to row/col) - NO SHIFTING
-            var row = Math.ceil(gridPosition / 4);
-            var col = ((gridPosition - 1) % 4) + 1;
-            
-            newDropZone.style.gridArea = row + ' / ' + col;
-
-            // Determine tile type based on sequence index, not position number
-            var sequenceIndex = currentPosition - 2; // -2 because position 1 is anchor, position 2 is first sequence item
-            var isMovieTile = sequenceIndex % 2 === 0; // Even sequence indices are movies, odd are actors
-            var color = isMovieTile ? '#007bff' : '#28a745';
-            var label = isMovieTile ? 'Movie' : 'Actor';
-
-            newDropZone.innerHTML = '<span style="color: ' + color + '; font-weight: bold; font-size: 12px;">' + label + '</span>';
-            sequenceGrid.appendChild(newDropZone);
-
-            // Check if this tile is in the final row (row 4) AND it's an actor tile AND we haven't added Jason yet
-            var isInFinalRow = row === 4;
-            var isActorTile = !isMovieTile;
-            
-            if (isInFinalRow && isActorTile && !finalJasonAdded) {
-                // Add final Jason Bateman tile OUTSIDE the grid
-                addFinalJasonBateman();
-                finalJasonAdded = true;
-                console.log('🎯 First actor in final row - Added Jason Bateman completion target OUTSIDE the grid!');
-            }
-
-            // Update grid size to accommodate new tile
-            updateGridSize();
-
-            // Reattach all drop zone listeners to include the new one
-            attachDropZoneListeners();
-
-            var expectedItem = gameConfig.sequence[sequenceIndex];
-            console.log('=== ADDED NEW TILE ===');
-            console.log('Current position:', currentPosition);
-            console.log('Grid position:', gridPosition, '(Row ' + row + ', Col ' + col + ')');
-            console.log('Sequence index:', sequenceIndex);
-            console.log('Expected:', expectedItem ? expectedItem.name : 'unknown', '(' + label.toLowerCase() + ')');
-            console.log('Expected file:', expectedItem ? expectedItem.file : 'unknown');
-            console.log('======================');
-        }
-
-        function addFinalJasonBateman() {
-            var sequenceGrid = document.getElementById('sequenceGrid');
-            
-            // Create Jason as an absolutely positioned element OUTSIDE the grid
-            var finalTile = document.createElement('div');
-            finalTile.className = 'tile final-jason-tile';
-            finalTile.id = 'finalJasonTile';
-            finalTile.setAttribute('data-src', gameConfig.anchor.file);
-            finalTile.setAttribute('data-name', gameConfig.anchor.name + ' (Circuit Complete)');
-
-            var img = document.createElement('img');
-            img.src = gameConfig.anchor.file;
-            img.alt = gameConfig.anchor.name;
-            img.onerror = function() {
-                finalTile.innerHTML = '<div style="padding:10px; text-align:center; color:#999; font-size:10px;">' + gameConfig.anchor.name + '<br><small>(Circuit Complete)</small></div>';
-            };
-
-            finalTile.appendChild(img);
-            
-            // Add a small indicator that this completes the circuit
-            var circuitLabel = document.createElement('div');
-            circuitLabel.style.position = 'absolute';
-            circuitLabel.style.bottom = '2px';
-            circuitLabel.style.left = '2px';
-            circuitLabel.style.background = 'rgba(40, 167, 69, 0.9)';
-            circuitLabel.style.color = 'white';
-            circuitLabel.style.fontSize = '8px';
-            circuitLabel.style.padding = '1px 3px';
-            circuitLabel.style.borderRadius = '3px';
-            circuitLabel.textContent = 'COMPLETE';
-            finalTile.appendChild(circuitLabel);
-            
-            // Add Jason to the sequence grid container (but positioned absolutely outside)
-            sequenceGrid.appendChild(finalTile);
-            
-            console.log('Added final Jason Bateman tile as absolutely positioned element outside the grid');
+            console.log('Circle tile cleared', tile.id);
         }
 
         function checkIfAllTilesFilled() {
@@ -1036,13 +811,13 @@
             for (var i = 0; i < gameConfig.sequence.length; i++) {
                 sequenceNames.push(gameConfig.sequence[i].name);
             }
-            var progression = gameConfig.anchor.name + ' → ' + sequenceNames.join(' → ');
+            var progression = gameConfig.anchor.name + ' → ' + sequenceNames.join(' → ') + ' → ' + gameConfig.anchor.name;
             var winMessage = document.getElementById('winMessage');
             var gameMessage = document.getElementById('gameMessage');
             
             gameMessage.style.display = 'none';
             
-            winMessage.innerHTML = '<h2>🎉 Congratulations! 🎉</h2><p><strong>Movie Sequence ' + currentAttempt + '/7</strong></p><p>' + progression + '</p><button class="sms-button" onclick="sendSMS()">Share Results</button>';
+            winMessage.innerHTML = '<h2>🎉 Circle Complete! 🎉</h2><p><strong>Connact Game ' + currentAttempt + '/7</strong></p><p>' + progression + '</p><button class="sms-button" onclick="sendSMS()">Share Results</button>';
             winMessage.style.display = 'block';
             
             document.getElementById('attemptCounter').textContent = 'Completed in ' + currentAttempt + (currentAttempt === 1 ? ' attempt!' : ' attempts!');
@@ -1054,25 +829,23 @@
             for (var i = 0; i < gameConfig.sequence.length; i++) {
                 sequenceNames.push(gameConfig.sequence[i].name);
             }
-            var progression = gameConfig.anchor.name + ' → ' + sequenceNames.join(' → ');
+            var progression = gameConfig.anchor.name + ' → ' + sequenceNames.join(' → ') + ' → ' + gameConfig.anchor.name;
             var attemptsText = currentAttempt === 1 ? "1 attempt" : currentAttempt + " attempts";
-            var message = 'Movie Sequence ' + currentAttempt + '/7\n\n' + progression + '\n\nCompleted in ' + attemptsText + '!';
+            var message = 'Connact Game ' + currentAttempt + '/7\n\n' + progression + '\n\nCompleted in ' + attemptsText + '!';
             
             var smsURL = 'sms:' + gameConfig.smsNumber + '?body=' + encodeURIComponent(message);
             window.open(smsURL, '_blank');
             console.log('SMS sent');
         }
 
-                
         function resetDragState() {
-            // Clear all drag states
             var draggingTiles = document.querySelectorAll('.png-tile.dragging');
             for (var i = 0; i < draggingTiles.length; i++) {
                 draggingTiles[i].classList.remove('dragging');
                 draggingTiles[i].style.opacity = '1';
             }
             
-            var dragOverZones = document.querySelectorAll('.drop-zone.drag-over');
+            var dragOverZones = document.querySelectorAll('.circle-drop-zone.drag-over');
             for (var i = 0; i < dragOverZones.length; i++) {
                 dragOverZones[i].classList.remove('drag-over');
                 dragOverZones[i].style.backgroundColor = '';
@@ -1084,36 +857,30 @@
             enterButton.textContent = 'Enter';
             enterButton.style.backgroundColor = '#007bff';
             
-            // Reset both drag and touch states
             draggedTile = null;
-            touchedTile = null;
-            isDragging = false;
-            
             console.log('Drag state reset');
         }
 
-        // Add this to the window to handle any drag interruptions
         window.addEventListener('dragend', function(e) {
             if (e.target.classList.contains('png-tile')) {
                 setTimeout(function() {
-                    if (!document.querySelector('.drop-zone.drag-over')) {
+                    if (!document.querySelector('.circle-drop-zone.drag-over')) {
                         resetDragState();
                     }
                 }, 100);
             }
         });
 
-        // Handle window resize to update grid size
+        // Handle window resize to recreate layout
         window.addEventListener('resize', function() {
-            updateGridSize();
+            createCircularLayout();
+            attachDropZoneListeners();
         });
 
-        // Initialize everything
         window.addEventListener('load', function() {
             try {
                 initializeGame();
-                
-                console.log('Game initialized successfully');
+                console.log('Circular game initialized successfully');
             } catch (error) {
                 console.error('Error initializing game:', error);
             }
