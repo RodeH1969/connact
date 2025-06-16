@@ -209,9 +209,9 @@
 
         .game-instructions {
             font-size: 16px;
-            color: #333;
+            color: #007bff;
             margin-bottom: 15px;
-            font-weight: normal;
+            font-weight: bold;
             max-width: 600px;
             margin-left: auto;
             margin-right: auto;
@@ -265,10 +265,10 @@
 
 
         /* Mobile Adjustments */
-        @media screen and (max-width: 768px) {
+        @media screen and (max-width: 868px) {
             .circle-container {
-                width: 320px;
-                height: 320px;
+                width: 360px;
+                height: 360px;
             }
 
             .center-logo {
@@ -328,7 +328,7 @@
 
 
     <div class="game-info">
-        <div class="game-instructions">Connect actors through movies starting with the actor pictured clockwise or anticlockwise</div>
+        <div class="game-instructions">Connect actors through movies starting with the actor pictured. Move either clockwise or anticlockwise from the starting actor.</div>
         <div id="attemptCounter">Attempt 1 of 7</div>
         <div id="gameMessage" class="message" style="display: none;"></div>
         <div id="winMessage" class="win-message" style="display: none;"></div>
