@@ -389,7 +389,7 @@
             },
             sequence: [
                 {name: "Identity Thief", file: "movies/identitythief.png", type: "movie"},
-                {name: "Melissa McCarthy", file: "actors/Melissa_McCarthy.png", type: "actor"},
+                {name: "Melissa McCarthy", file: "actors/melissa_mccarthy.png", type: "actor"},
                 {name: "Bridesmaids", file: "movies/bridesmaids.png", type: "movie"},
                 {name: "Rebel Wilson", file: "actors/rebel_wilson.png", type: "actor"},
                 {name: "Pitch Perfect", file: "movies/pitchperfect.png", type: "movie"},
@@ -439,13 +439,18 @@
             correctAnswers = {};
             var identityThiefFile = gameConfig.sequence[0].file;
             var couplesRetreatFile = gameConfig.sequence[14].file;
-            correctAnswers['dropTile2'] = [identityThiefFile, couplesRetreatFile];
-            correctAnswers['dropTile15'] = [identityThiefFile, couplesRetreatFile];
+            for (var pos = 2; pos <= 16; pos++) {
+                if (pos === 2 || pos === 15) {
+                    correctAnswers['dropTile' + pos] = [identityThiefFile, couplesRetreatFile];
+                } else {
+                    correctAnswers['dropTile' + pos] = []; // Initialize as empty, to be updated after first move
+                }
+            }
             console.log('=== INITIAL VALID STARTING OPTIONS ===');
             console.log('Position 1: Jason Bateman (anchor)');
             console.log('Position 2: Identity Thief OR Couples Retreat');
             console.log('Position 15: Identity Thief OR Couples Retreat');
-            console.log('4 possible starting combinations available');
+            console.log('Other positions: To be determined after first move');
             console.log('=======================================');
         }
 
@@ -626,20 +631,61 @@
                 console.log('Checking start move:', { imageSrc, validStartFiles, position });
                 if ((position === 2 || position === 15) && validStartFiles.includes(imageSrc)) {
                     isCorrect = true;
-                    generateSequence(imageSrc, position);
+                    updateCorrectAnswers(imageSrc, position);
                 }
             } else {
                 const correctImage = correctAnswers[dropZoneId];
-                isCorrect = imageSrc === correctImage;
+                isCorrect = correctImage.includes(imageSrc); // Check against array of options
                 console.log('Comparing:', { imageSrc, correctImage });
             }
             console.log('Validation Result:', isCorrect);
             if (!isCorrect && placedImages.size > 0) {
-                gameSequence = null;
-                generateCorrectAnswers();
-                console.log('Reset gameSequence due to incorrect move');
+                // Do not reset gameSequence; keep options available
+                console.log('Incorrect move, but allowing flexibility');
             }
             return isCorrect;
+        }
+
+        function updateCorrectAnswers(startingImage, startPosition) {
+            const fullCircle = [
+                "actors/jason_bateman.png",
+                "movies/identitythief.png",
+                "actors/melissa_mccarthy.png",
+                "movies/bridesmaids.png",
+                "actors/rebel_wilson.png",
+                "movies/pitchperfect.png",
+                "actors/anna_kendrick.png",
+                "movies/upintheair.png",
+                "actors/vera_farmiga.png",
+                "movies/thedeparted.png",
+                "actors/mark_wahlberg.png",
+                "movies/ted.png",
+                "actors/mila_kunis.png",
+                "movies/badmoms.png",
+                "actors/kristen_bell.png",
+                "movies/couplesretreat.png",
+                "actors/jason_bateman.png"
+            ];
+            const startIndex = fullCircle.indexOf(startingImage);
+            if (startIndex === -1) {
+                console.error("Start image not found in fullCircle");
+                return;
+            }
+            let direction = (startPosition === 2) ? "counterclockwise" : "clockwise";
+            gameDirection = direction;
+            gameSequence = "circular";
+            const indices = (direction === "counterclockwise") 
+                ? Array.from({length: 15}, (_, i) => (startIndex + i + 1) % 16)
+                : Array.from({length: 15}, (_, i) => (startIndex - i - 1 + 16) % 16);
+            console.log('Indices calculated:', indices.map(i => fullCircle[i]));
+            for (let i = 0; i < 15; i++) {
+                const pos = (startPosition === 2) ? 2 + i : 15 - i;
+                if (pos !== startPosition && !correctAnswers['dropTile' + pos].length) {
+                    correctAnswers['dropTile' + pos] = [fullCircle[indices[i]]];
+                    console.log(`Updated dropTile${pos} to ${fullCircle[indices[i]]}`);
+                }
+            }
+            console.log('Updated correctAnswers:', correctAnswers);
         }
 
         function showMobileFeedback(isCorrect, imageName) {
@@ -810,14 +856,14 @@
                 if (Array.isArray(validAnswers)) {
                     isCorrect = validAnswers.includes(imageSrc);
                     if (isCorrect) {
-                        generateSequence(imageSrc, position);
+                        updateCorrectAnswers(imageSrc, position);
                     }
                 } else {
                     isCorrect = validAnswers === imageSrc;
                 }
             } else {
                 var correctImage = correctAnswers[dropZoneId];
-                isCorrect = imageSrc === correctImage;
+                isCorrect = correctImage.includes(imageSrc);
             }
             if (isCorrect) {
                 placeImageInCircle(dropZone, imageSrc, imageName);
@@ -879,12 +925,11 @@
             console.log('Image placed in circle', dropZone.id);
         }
 
-        function generateSequence(startingMovieFile, firstPosition) {
-            correctAnswers = {};
+        function updateCorrectAnswers(startingImage, startPosition) {
             const fullCircle = [
                 "actors/jason_bateman.png",
                 "movies/identitythief.png",
-                "actors/Melissa_McCarthy.png",
+                "actors/melissa_mccarthy.png",
                 "movies/bridesmaids.png",
                 "actors/rebel_wilson.png",
                 "movies/pitchperfect.png",
@@ -900,40 +945,30 @@
                 "movies/couplesretreat.png",
                 "actors/jason_bateman.png"
             ];
-            const startIndex = fullCircle.indexOf(startingMovieFile);
-            console.log('Starting index:', startIndex, 'for', startingMovieFile);
+            const startIndex = fullCircle.indexOf(startingImage);
             if (startIndex === -1) {
-                console.error("Start movie not found in fullCircle");
+                console.error("Start image not found in fullCircle");
                 return;
             }
-            let direction, indices = [];
-            if (firstPosition === 2) {
-                direction = "counterclockwise";
-                // Start from the next tile after the starting position
-                for (let i = 1; i <= 15; i++) {
-                    let nextIndex = (startIndex + i) % 16;
-                    indices.push(nextIndex);
-                    console.log(`Index ${i}: ${nextIndex} -> ${fullCircle[nextIndex]} for dropTile${2 + i - 1}`);
-                }
-            } else if (firstPosition === 15) {
-                direction = "clockwise";
-                for (let i = 1; i <= 15; i++) {
-                    let nextIndex = (startIndex - i + 16) % 16;
-                    indices.push(nextIndex);
-                    console.log(`Index ${i}: ${nextIndex} -> ${fullCircle[nextIndex]} for dropTile${15 - i + 1}`);
-                }
-            } else {
-                console.error("Invalid starting position. Must be 2 or 15.");
-                return;
-            }
+            let direction = (startPosition === 2) ? "counterclockwise" : "clockwise";
             gameDirection = direction;
             gameSequence = "circular";
-            for (let i = 0; i < 15; i++) {
-                const position = (firstPosition === 2) ? 2 + i : 15 - i; // Adjust for clockwise/counterclockwise
-                correctAnswers['dropTile' + position] = fullCircle[indices[i]];
-                console.log(`Setting dropTile${position} to ${fullCircle[indices[i]]}`);
+            const indices = (direction === "counterclockwise") 
+                ? Array.from({length: 15}, (_, i) => (startIndex + i + 1) % 16)
+                : Array.from({length: 15}, (_, i) => (startIndex - i - 1 + 16) % 16);
+            console.log('Indices calculated:', indices.map(i => fullCircle[i]));
+            // Map indices to all possible positions, allowing any tile to be filled
+            for (let pos = 2; pos <= 16; pos++) {
+                if (pos !== startPosition && !placedImages.has('dropTile' + pos)) {
+                    const offset = (pos - startPosition + 15) % 15;
+                    const index = indices[offset];
+                    if (!correctAnswers['dropTile' + pos].includes(fullCircle[index])) {
+                        correctAnswers['dropTile' + pos] = [fullCircle[index]];
+                        console.log(`Updated dropTile${pos} to ${fullCircle[index]}`);
+                    }
+                }
             }
-            console.log(`Sequence generated ${direction} from ${startingMovieFile}`, correctAnswers);
+            console.log('Updated correctAnswers:', correctAnswers);
         }
 
         function checkIfAllTilesFilled() {
