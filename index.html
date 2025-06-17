@@ -631,6 +631,7 @@
             } else {
                 const correctImage = correctAnswers[dropZoneId];
                 isCorrect = imageSrc === correctImage;
+                console.log('Comparing:', { imageSrc, correctImage });
             }
             console.log('Validation Result:', isCorrect);
             if (!isCorrect && placedImages.size > 0) {
@@ -900,6 +901,7 @@
                 "actors/jason_bateman.png"
             ];
             const startIndex = fullCircle.indexOf(startingMovieFile);
+            console.log('Starting index:', startIndex, 'for', startingMovieFile);
             if (startIndex === -1) {
                 console.error("Start movie not found in fullCircle");
                 return;
@@ -907,13 +909,18 @@
             let direction, indices = [];
             if (firstPosition === 2) {
                 direction = "counterclockwise";
+                // Start from the next tile after the starting position
                 for (let i = 1; i <= 15; i++) {
-                    indices.push((startIndex + i) % 16);
+                    let nextIndex = (startIndex + i) % 16;
+                    indices.push(nextIndex);
+                    console.log(`Index ${i}: ${nextIndex} -> ${fullCircle[nextIndex]} for dropTile${2 + i - 1}`);
                 }
             } else if (firstPosition === 15) {
                 direction = "clockwise";
                 for (let i = 1; i <= 15; i++) {
-                    indices.push((startIndex - i + 16) % 16);
+                    let nextIndex = (startIndex - i + 16) % 16;
+                    indices.push(nextIndex);
+                    console.log(`Index ${i}: ${nextIndex} -> ${fullCircle[nextIndex]} for dropTile${15 - i + 1}`);
                 }
             } else {
                 console.error("Invalid starting position. Must be 2 or 15.");
@@ -922,8 +929,9 @@
             gameDirection = direction;
             gameSequence = "circular";
             for (let i = 0; i < 15; i++) {
-                const position = 2 + i;
+                const position = (firstPosition === 2) ? 2 + i : 15 - i; // Adjust for clockwise/counterclockwise
                 correctAnswers['dropTile' + position] = fullCircle[indices[i]];
+                console.log(`Setting dropTile${position} to ${fullCircle[indices[i]]}`);
             }
             console.log(`Sequence generated ${direction} from ${startingMovieFile}`, correctAnswers);
         }
