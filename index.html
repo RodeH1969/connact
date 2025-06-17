@@ -542,6 +542,9 @@
             pngTiles = [];
 
             var allImages = gameConfig.sequence.slice();
+            // Remove Vera Farmiga from available PNG files
+            allImages = allImages.filter(item => item.name !== "Vera Farmiga");
+
             for (var i = allImages.length - 1; i > 0; i--) {
                 var j = Math.floor(Math.random() * (i + 1));
                 var temp = allImages[i];
